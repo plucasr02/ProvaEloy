@@ -1,0 +1,1549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mecatrônica IFCE - Falhas, Diagramas e Transformações</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- MathJax for rendering engineering formulas -->
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            cyber: {
+              900: '#070b13',
+              800: '#0d1527',
+              700: '#14223f',
+              cyan: '#00f0ff',
+              emerald: '#05ffa1',
+              amber: '#ffb703',
+              crimson: '#ff0055',
+              purple: '#b5179e',
+              blue: '#0070f3',
+              border: '#1f3460'
+            }
+          },
+          fontFamily: {
+            tech: ['Orbitron', 'sans-serif'],
+            body: ['Rajdhani', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #070b13;
+      color: #e2e8f0;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(0, 240, 255, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(5, 255, 161, 0.04) 0%, transparent 40%),
+        linear-gradient(to right, rgba(20, 34, 63, 0.15) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(20, 34, 63, 0.15) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 30px 30px, 30px 30px;
+    }
+    .hud-glow {
+      box-shadow: 0 0 15px -2px rgba(0, 240, 255, 0.25);
+    }
+    .hud-border {
+      border: 1px solid rgba(0, 240, 255, 0.25);
+      position: relative;
+    }
+    .hud-border::before {
+      content: '';
+      position: absolute;
+      top: -2px; left: -2px;
+      width: 8px; height: 8px;
+      border-top: 2px solid #00f0ff;
+      border-left: 2px solid #00f0ff;
+    }
+    .hud-border::after {
+      content: '';
+      position: absolute;
+      bottom: -2px; right: -2px;
+      width: 8px; height: 8px;
+      border-bottom: 2px solid #00f0ff;
+      border-right: 2px solid #00f0ff;
+    }
+    /* Hide scrollbar for clean mobile tabs */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* MathJax mobile horizontal scroll */
+    .mjx-chtml {
+      max-width: 100%;
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding: 2px 0;
+    }
+  </style>
+</head>
+<body class="font-body text-base min-h-screen flex flex-col antialiased selection:bg-cyber-cyan selection:text-black pb-12">
+
+  <!-- TOP HEADER HUD (Otimizado para Mobile) -->
+  <header class="border-b border-cyber-border/70 bg-cyber-900/95 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-3.5 py-2.5 flex items-center justify-between gap-2">
+      <div class="flex items-center space-x-2.5 min-w-0">
+        <div class="w-8 h-8 rounded bg-cyber-800 border border-cyber-cyan/50 flex-shrink-0 flex items-center justify-center text-cyber-cyan shadow-[0_0_10px_rgba(0,240,255,0.3)]">
+          <i class="fa-solid fa-microchip text-sm"></i>
+        </div>
+        <div class="min-w-0">
+          <span class="text-[10px] uppercase tracking-wider font-mono text-cyber-cyan/80 block truncate">
+            IFCE • MECATRÔNICA INDUSTRIAL
+          </span>
+          <h1 class="text-sm sm:text-lg md:text-xl font-tech font-bold tracking-wider text-white truncate">
+            MATERIAIS // <span class="text-cyber-cyan">SISTEMA DE ESTUDOS</span>
+          </h1>
+        </div>
+      </div>
+
+      <!-- Quick Tag -->
+      <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-cyber-cyan/15 text-cyber-cyan border border-cyber-cyan/30 flex-shrink-0">
+        Prof. Eloy
+      </span>
+    </div>
+
+    <!-- TABS MOBILE: 4 Abas Ergonômicas -->
+    <div class="max-w-7xl mx-auto px-2 pb-2">
+      <nav class="grid grid-cols-4 gap-1 p-1 bg-cyber-950/80 rounded-lg border border-cyber-border/60 text-center font-tech text-xs tracking-wider">
+        <button onclick="switchTab('tab-lista6')" id="btn-lista6" class="tab-btn py-2 px-1 rounded font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1 bg-cyber-cyan text-cyber-900 shadow-md">
+          <i class="fa-solid fa-triangle-exclamation text-xs"></i>
+          <span class="text-[10px] sm:text-xs">LISTA 06</span>
+        </button>
+        <button onclick="switchTab('tab-lista7')" id="btn-lista7" class="tab-btn py-2 px-1 rounded font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1 text-slate-400 hover:text-white">
+          <i class="fa-solid fa-chart-pie text-xs"></i>
+          <span class="text-[10px] sm:text-xs">LISTA 07</span>
+        </button>
+        <button onclick="switchTab('tab-lista8')" id="btn-lista8" class="tab-btn py-2 px-1 rounded font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1 text-slate-400 hover:text-white">
+          <i class="fa-solid fa-atom text-xs"></i>
+          <span class="text-[10px] sm:text-xs">LISTA 08</span>
+        </button>
+        <button onclick="switchTab('tab-prova')" id="btn-prova" class="tab-btn py-2 px-1 rounded font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1 text-slate-400 hover:text-white">
+          <i class="fa-solid fa-award text-cyber-amber text-xs"></i>
+          <span class="text-[10px] sm:text-xs">PROVA 4</span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-grow max-w-7xl w-full mx-auto p-3 sm:p-5 space-y-6">
+
+    <!-- ============================================================== -->
+    <!-- TAB 1: LISTA 06 - FALHAS -->
+    <!-- ============================================================== -->
+    <section id="tab-lista6" class="tab-content block space-y-5">
+      
+      <!-- RESUMO TEÓRICO COMPACTO -->
+      <div class="hud-border bg-cyber-800/80 p-4 rounded-lg backdrop-blur">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 mb-3 border-b border-cyber-border gap-1.5">
+          <div class="flex items-center space-x-2">
+            <span class="p-1.5 rounded bg-cyber-cyan/15 text-cyber-cyan text-sm">
+              <i class="fa-solid fa-bolt"></i>
+            </span>
+            <h2 class="text-base sm:text-lg font-tech font-bold text-white">
+              Mecanismos de Falha // Resumo Rápido
+            </h2>
+          </div>
+          <span class="font-mono text-[10px] self-start sm:self-auto px-2 py-0.5 bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/30 rounded">
+            CAPÍTULO 8 • FALHAS
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs leading-relaxed">
+          <!-- Fratura -->
+          <div class="p-3 rounded bg-cyber-900/70 border border-cyber-border/70">
+            <h3 class="font-tech text-xs font-bold text-cyber-cyan flex items-center gap-1.5 mb-1.5">
+              <i class="fa-solid fa-burst"></i> 1. Fratura
+            </h3>
+            <p class="text-slate-300">
+              <strong class="text-white">Dúctil:</strong> Deformação plástica e taça-cone.<br>
+              <strong class="text-white">Frágil:</strong> Propagação instantânea sem aviso (clivagem transgranular ou intergranular).<br>
+              <strong class="text-white">Transição D-F:</strong> Aços CCC fragilizam sob frio (Ensaio Charpy).
+            </p>
+          </div>
+
+          <!-- Fadiga -->
+          <div class="p-3 rounded bg-cyber-900/70 border border-cyber-border/70">
+            <h3 class="font-tech text-xs font-bold text-cyber-emerald flex items-center gap-1.5 mb-1.5">
+              <i class="fa-solid fa-arrows-spin"></i> 2. Fadiga (>90% das falhas)
+            </h3>
+            <p class="text-slate-300">
+              Ocorre por <strong class="text-cyber-emerald">tensões cíclicas</strong> abaixo de $\sigma_y$.<br>
+              • <strong class="text-white">Marcas de praia:</strong> Macroscópicas (paradas).<br>
+              • <strong class="text-white">Estrias:</strong> Microscópicas (1 ciclo = 1 estria).<br>
+              • Prevenção: polimento superficial e <em>shot peening</em>.
+            </p>
+          </div>
+
+          <!-- Fluência -->
+          <div class="p-3 rounded bg-cyber-900/70 border border-cyber-border/70">
+            <h3 class="font-tech text-xs font-bold text-cyber-amber flex items-center gap-1.5 mb-1.5">
+              <i class="fa-solid fa-fire"></i> 3. Fluência (Creep)
+            </h3>
+            <p class="text-slate-300">
+              Deformação plástica contínua sob carga constante a alta temperatura ($T > 0,4 T_f$).<br>
+              • Fases: Primária ($E>R$), Secundária ($\dot{\epsilon}$ mínima constante, $E=R$) e Terciária ($E<R$, ruptura).
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUADRO RESUMO DE FÓRMULAS LISTA 6 -->
+      <div class="bg-cyber-900/90 border border-cyber-border rounded-lg p-3.5">
+        <h3 class="font-tech text-xs sm:text-sm font-bold text-cyber-cyan flex items-center gap-2 mb-3">
+          <i class="fa-solid fa-calculator"></i> Quadro Sinótico de Fórmulas // Falhas
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs font-mono">
+          
+          <div class="bg-cyber-800/80 p-2.5 rounded border border-cyber-border/80">
+            <span class="text-cyber-cyan font-bold block text-[11px] mb-1">Concentração de Tensão</span>
+            <div class="overflow-x-auto text-xs my-1 text-white">$\sigma_m = 2\sigma_0 \sqrt{\frac{a}{\rho_e}}$ | $K_t = \frac{\sigma_m}{\sigma_0}$</div>
+            <p class="text-slate-400 text-[10px]">Trinca interna: usar $a = L/2$; superficial: $a = L$.</p>
+          </div>
+
+          <div class="bg-cyber-800/80 p-2.5 rounded border border-cyber-border/80">
+            <span class="text-cyber-emerald font-bold block text-[11px] mb-1">Critério de Griffith</span>
+            <div class="overflow-x-auto text-xs my-1 text-white">$\sigma_c = \sqrt{\frac{2E\gamma_s}{\pi a}}$</div>
+            <p class="text-slate-400 text-[10px]">Propagação crítica frágil (vidros e cerâmicas).</p>
+          </div>
+
+          <div class="bg-cyber-800/80 p-2.5 rounded border border-cyber-border/80">
+            <span class="text-cyber-amber font-bold block text-[11px] mb-1">Mecânica da Fratura ($K_{Ic}$)</span>
+            <div class="overflow-x-auto text-xs my-1 text-white">$K_{Ic} = Y \sigma \sqrt{\pi a}$</div>
+            <p class="text-slate-400 text-[10px]">Tenacidade em deformação plana ($Y \approx 1,0$).</p>
+          </div>
+
+          <div class="bg-cyber-800/80 p-2.5 rounded border border-cyber-border/80">
+            <span class="text-cyber-crimson font-bold block text-[11px] mb-1">Ciclo de Fadiga</span>
+            <div class="overflow-x-auto text-xs my-1 text-white">$\sigma_a = \frac{\sigma_{\max} - \sigma_{\min}}{2}$ | $R = \frac{\sigma_{\min}}{\sigma_{\max}}$</div>
+            <p class="text-slate-400 text-[10px]">Amplitude alternada e razão de tensão.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIMULADOR INTERATIVO ADAPTADO PARA MOBILE -->
+      <div class="hud-border bg-cyber-800/60 p-3.5 rounded-lg">
+        <div class="flex items-center justify-between gap-1 mb-2">
+          <h4 class="font-tech text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
+            <i class="fa-solid fa-gamepad text-cyber-cyan"></i>
+            Simulador de Tensão no Entalhe
+          </h4>
+          <span class="text-[9px] font-mono px-1.5 py-0.5 bg-cyber-cyan/20 text-cyber-cyan rounded">INTERATIVO</span>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+          <div class="space-y-2 bg-cyber-900/90 p-3 rounded border border-cyber-border text-xs font-mono">
+            <div>
+              <div class="flex justify-between text-[11px] mb-0.5">
+                <span>Tensão ($\sigma_0$):</span>
+                <span id="lbl-sigma0" class="text-cyber-cyan font-bold">170 MPa</span>
+              </div>
+              <input type="range" id="input-sigma0" min="50" max="600" value="170" step="10" class="w-full accent-cyber-cyan" oninput="updateStressSim()">
+            </div>
+            <div>
+              <div class="flex justify-between text-[11px] mb-0.5">
+                <span>Semi-trinca ($a$):</span>
+                <span id="lbl-a" class="text-cyber-emerald font-bold">0.0125 mm</span>
+              </div>
+              <input type="range" id="input-a" min="0.005" max="0.05" value="0.0125" step="0.0025" class="w-full accent-cyber-emerald" oninput="updateStressSim()">
+            </div>
+            <div>
+              <div class="flex justify-between text-[11px] mb-0.5">
+                <span>Raio ($\rho_e$):</span>
+                <span id="lbl-rho" class="text-cyber-amber font-bold">0.00025 mm</span>
+              </div>
+              <input type="range" id="input-rho" min="0.0001" max="0.001" value="0.00025" step="0.00005" class="w-full accent-cyber-amber" oninput="updateStressSim()">
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-1 border-t border-cyber-border/70 text-center">
+              <div class="p-1.5 bg-cyber-800 rounded">
+                <span class="text-slate-400 block text-[9px]">$K_t$</span>
+                <span id="res-kt" class="text-sm font-bold text-cyber-cyan font-tech">14.14</span>
+              </div>
+              <div class="p-1.5 bg-cyber-800 rounded">
+                <span class="text-slate-400 block text-[9px]">$\sigma_{\max}$</span>
+                <span id="res-sigmamax" class="text-sm font-bold text-cyber-crimson font-mono">2.40 GPa</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="md:col-span-2 flex flex-col items-center justify-center bg-cyber-900/90 rounded p-2 border border-cyber-border">
+            <canvas id="stressCanvas" width="360" height="180" class="w-full max-w-sm rounded"></canvas>
+            <span class="text-[10px] font-mono text-slate-400 mt-1">
+              Visualização das linhas de força concentradas na trinca
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUESTÕES DA LISTA 06 -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between pb-1">
+          <h3 class="font-tech text-sm sm:text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-cyber-cyan"></i> Resolução // Lista 06
+          </h3>
+          <span class="text-[10px] font-mono text-slate-400">19 Questões</span>
+        </div>
+
+        <div id="lista6-container" class="space-y-2">
+          <!-- Renderizado via script -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 2: LISTA 07 - DIAGRAMAS DE FASES -->
+    <!-- ============================================================== -->
+    <section id="tab-lista7" class="tab-content hidden space-y-5">
+      
+      <!-- RESUMO TEÓRICO LISTA 7 -->
+      <div class="hud-border bg-cyber-800/80 p-4 rounded-lg backdrop-blur">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 mb-3 border-b border-cyber-border gap-1.5">
+          <div class="flex items-center space-x-2">
+            <span class="p-1.5 rounded bg-cyber-emerald/15 text-cyber-emerald text-sm">
+              <i class="fa-solid fa-diagram-project"></i>
+            </span>
+            <h2 class="text-base sm:text-lg font-tech font-bold text-white">
+              Diagramas de Fases // Resumo Rápido
+            </h2>
+          </div>
+          <span class="font-mono text-[10px] self-start sm:self-auto px-2 py-0.5 bg-cyber-emerald/20 text-cyber-emerald border border-cyber-emerald/30 rounded">
+            CAPÍTULO 9 • DIAGRAMAS
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs leading-relaxed">
+          <!-- Alavanca -->
+          <div class="p-3 rounded bg-cyber-900/70 border border-cyber-border/70">
+            <h3 class="font-tech text-xs font-bold text-cyber-cyan flex items-center gap-1.5 mb-1.5">
+              <i class="fa-solid fa-scale-balanced"></i> 1. Regra da Alavanca
+            </h3>
+            <p class="text-slate-300">
+              • <strong>Composição das fases:</strong> Lida nas pontas da isoterma (*tie-line*).<br>
+              • <strong>Fração da fase:</strong> Proporcional ao segmento oposto dividido pelo comprimento total da linha de amarração.
+            </p>
+          </div>
+
+          <!-- Reações Invariantes -->
+          <div class="p-3 rounded bg-cyber-900/70 border border-cyber-border/70">
+            <h3 class="font-tech text-xs font-bold text-cyber-emerald flex items-center gap-1.5 mb-1.5">
+              <i class="fa-solid fa-shuffle"></i> 2. Reações Invariantes
+            </h3>
+            <p class="text-slate-300">
+              • <strong class="text-white">Eutética:</strong> $L \rightleftharpoons \alpha + \beta$<br>
+              • <strong class="text-white">Eutetoide:</strong> $\gamma \rightleftharpoons \alpha + \text{Fe}_3\text{C}$ ($727\ ^\circ\text{C}$, 0,76% C)<br>
+              • <strong class="text-white">Peritética:</strong> $\alpha + L \rightleftharpoons \beta$
+            </p>
+          </div>
+
+          <!-- Aços Fe-C -->
+          <div class="p-3 rounded bg-cyber-900/70 border border-cyber-border/70">
+            <h3 class="font-tech text-xs font-bold text-cyber-amber flex items-center gap-1.5 mb-1.5">
+              <i class="fa-solid fa-cube"></i> 3. Tipos de Aço
+            </h3>
+            <p class="text-slate-300">
+              • <strong class="text-white">Hipoeutetoide ($<0,76\%$ C):</strong> Ferrita proeutetoide ($\alpha'$) + Perlita.<br>
+              • <strong class="text-white">Eutetoide ($=0,76\%$ C):</strong> 100% Perlita.<br>
+              • <strong class="text-white">Hipereutetoide ($>0,76\%$ C):</strong> Cementita proeutetoide ($\text{Fe}_3\text{C}'$) + Perlita.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUADRO RESUMO DE FÓRMULAS LISTA 7 -->
+      <div class="bg-cyber-900/90 border border-cyber-border rounded-lg p-3.5">
+        <h3 class="font-tech text-xs sm:text-sm font-bold text-cyber-emerald flex items-center gap-2 mb-3">
+          <i class="fa-solid fa-square-root-variable"></i> Quadro de Formulações // Diagramas
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs font-mono">
+          
+          <div class="bg-cyber-800/80 p-2.5 rounded border border-cyber-border/80">
+            <span class="text-cyber-cyan font-bold block text-[11px] mb-1">Alavanca Binária</span>
+            <div class="overflow-x-auto text-xs my-1 text-white">$W_\alpha = \frac{C_\beta - C_0}{C_\beta - C_\alpha}$ | $W_\beta = \frac{C_0 - C_\alpha}{C_\beta - C_\alpha}$</div>
+            <p class="text-slate-400 text-[10px]">Soma total: $W_\alpha + W_\beta = 1$.</p>
+          </div>
+
+          <div class="bg-cyber-800/80 p-2.5 rounded border border-cyber-border/80">
+            <span class="text-cyber-emerald font-bold block text-[11px] mb-1">Fração Volumétrica</span>
+            <div class="overflow-x-auto text-xs my-1 text-white">$V_\alpha = \frac{W_\alpha / \rho_\alpha}{\frac{W_\alpha}{\rho_\alpha} + \frac{W_\beta}{\rho_\beta}}$</div>
+            <p class="text-slate-400 text-[10px]">$\rho_\alpha = 100 / (\frac{C_1}{\rho_1} + \frac{C_2}{\rho_2})$.</p>
+          </div>
+
+          <div class="bg-cyber-800/80 p-2.5 rounded border border-cyber-border/80">
+            <span class="text-cyber-amber font-bold block text-[11px] mb-1">Aço Hipoeutetoide</span>
+            <div class="overflow-x-auto text-xs my-1 text-white">$W_{\alpha'} = \frac{0,76 - C_0}{0,76 - 0,022}$ | $W_p = \frac{C_0 - 0,022}{0,76 - 0,022}$</div>
+            <p class="text-slate-400 text-[10px]">Ferrita proeutetoide e perlita.</p>
+          </div>
+
+          <div class="bg-cyber-800/80 p-2.5 rounded border border-cyber-border/80">
+            <span class="text-cyber-crimson font-bold block text-[11px] mb-1">Ferrita Total ($Fe-C$)</span>
+            <div class="overflow-x-auto text-xs my-1 text-white">$W_\alpha = \frac{6,70 - C_0}{6,70 - 0,022}$</div>
+            <p class="text-slate-400 text-[10px]">Cementita total: $W_{\text{Fe}_3\text{C}} = 1 - W_\alpha$.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- FERRAMENTA INTERATIVA: CALCULADORA Fe-C TOUCH -->
+      <div class="hud-border bg-cyber-800/60 p-3.5 rounded-lg">
+        <div class="flex items-center justify-between gap-1 mb-2">
+          <h4 class="font-tech text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
+            <i class="fa-solid fa-sliders text-cyber-emerald"></i>
+            Calculadora Fe-C Abaixo de 727 °C
+          </h4>
+          <span class="text-[9px] font-mono px-1.5 py-0.5 bg-cyber-emerald/20 text-cyber-emerald rounded">SLIDER</span>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+          <div class="bg-cyber-900/90 p-3 rounded border border-cyber-border font-mono text-xs space-y-2">
+            <div class="flex justify-between items-center text-[11px]">
+              <span>Teor de Carbono ($C_0$):</span>
+              <span id="sim-c0-val" class="text-cyber-cyan font-bold">0.35 %p C</span>
+            </div>
+            <input type="range" id="sim-c0" min="0.03" max="2.0" step="0.01" value="0.35" class="w-full accent-cyber-emerald" oninput="updateFeCSim()">
+            <div class="pt-1.5 border-t border-cyber-border/70 text-[11px] space-y-0.5">
+              <div>Tipo: <span id="sim-class" class="text-cyber-emerald font-bold">Hipoeutetoide</span></div>
+              <div>Proeutetoide: <span id="sim-pro" class="text-white font-bold">Ferrita ($\alpha'$)</span></div>
+            </div>
+          </div>
+
+          <div class="md:col-span-2 grid grid-cols-2 sm:grid-cols-4 gap-2 text-center font-mono">
+            <div class="p-2 bg-cyber-900/90 rounded border border-cyber-border">
+              <span class="text-slate-400 block text-[9px]">FERRITA TOT.</span>
+              <span id="sim-w-alpha" class="text-sm font-bold text-cyber-cyan font-tech">95.1%</span>
+            </div>
+            <div class="p-2 bg-cyber-900/90 rounded border border-cyber-border">
+              <span class="text-slate-400 block text-[9px]">CEMENTITA TOT.</span>
+              <span id="sim-w-fe3c" class="text-sm font-bold text-cyber-amber font-tech">4.9%</span>
+            </div>
+            <div class="p-2 bg-cyber-900/90 rounded border border-cyber-border">
+              <span class="text-slate-400 block text-[9px]">PROEUTETOIDE</span>
+              <span id="sim-w-pro" class="text-sm font-bold text-cyber-emerald font-tech">55.6%</span>
+            </div>
+            <div class="p-2 bg-cyber-900/90 rounded border border-cyber-border">
+              <span class="text-slate-400 block text-[9px]">PERLITA</span>
+              <span id="sim-w-p" class="text-sm font-bold text-cyber-crimson font-tech">44.4%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUESTÕES DA LISTA 07 -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between pb-1">
+          <h3 class="font-tech text-sm sm:text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-cyber-emerald"></i> Resolução // Lista 07
+          </h3>
+          <span class="text-[10px] font-mono text-slate-400">12 Questões</span>
+        </div>
+
+        <div id="lista7-container" class="space-y-2">
+          <!-- Renderizado via script -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 3: LISTA 08 - TRANSFORMAÇÕES DE FASES EM METAIS -->
+    <!-- ============================================================== -->
+    <section id="tab-lista8" class="tab-content hidden space-y-5">
+      
+      <!-- RESUMO TEÓRICO LISTA 8 -->
+      <div class="hud-border bg-cyber-800/80 p-4 rounded-lg backdrop-blur">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 mb-3 border-b border-cyber-border gap-1.5">
+          <div class="flex items-center space-x-2">
+            <span class="p-1.5 rounded bg-cyber-purple/20 text-cyber-cyan text-sm">
+              <i class="fa-solid fa-atom"></i>
+            </span>
+            <h2 class="text-base sm:text-lg font-tech font-bold text-white">
+              Transformações de Fases // Resumo Rápido
+            </h2>
+          </div>
+          <span class="font-mono text-[10px] self-start sm:self-auto px-2 py-0.5 bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/30 rounded">
+            CAPÍTULO 10 • CINÉTICA & TTT
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs leading-relaxed">
+          <!-- Cinética e Avrami -->
+          <div class="p-3 rounded bg-cyber-900/70 border border-cyber-border/70">
+            <h3 class="font-tech text-xs font-bold text-cyber-cyan flex items-center gap-1.5 mb-1.5">
+              <i class="fa-solid fa-seedling"></i> 1. Nucleação & Crescimento
+            </h3>
+            <p class="text-slate-300">
+              • <strong class="text-white">Nucleação:</strong> Formação de partículas críticas estáveis.<br>
+              • <strong class="text-white">Crescimento:</strong> Expansão por difusão atômica (curva em S de Avrami).<br>
+              • Temperaturas maiores aceleram a cinética de recristalização.
+            </p>
+          </div>
+
+          <!-- Diagramas TTT e TRC -->
+          <div class="p-3 rounded bg-cyber-900/70 border border-cyber-border/70">
+            <h3 class="font-tech text-xs font-bold text-cyber-emerald flex items-center gap-1.5 mb-1.5">
+              <i class="fa-solid fa-chart-line"></i> 2. Curvas TTT vs. TRC
+            </h3>
+            <p class="text-slate-300">
+              • <strong class="text-white">TTT:</strong> Transformação isotérmica ($T$ constante).<br>
+              • <strong class="text-white">TRC:</strong> Resfriamento contínuo (curvas deslocadas para baixo e direita).<br>
+              • Elementos de liga atrasam o nariz perlítico, facilitando a têmpera.
+            </p>
+          </div>
+
+          <!-- Microconstituintes -->
+          <div class="p-3 rounded bg-cyber-900/70 border border-cyber-border/70">
+            <h3 class="font-tech text-xs font-bold text-cyber-amber flex items-center gap-1.5 mb-1.5">
+              <i class="fa-solid fa-layer-group"></i> 3. Microestruturas do Aço
+            </h3>
+            <p class="text-slate-300">
+              • <strong class="text-white">Perlita:</strong> Lamelas ($\alpha + \text{Fe}_3\text{C}$). Fina é mais dura que grosseira.<br>
+              • <strong class="text-white">Bainita:</strong> Agulhas/ripas finas. Mais resistente que perlita.<br>
+              • <strong class="text-white">Martensita:</strong> Adifusional, rede TCC supersaturada. Máxima dureza e fragilidade (requer revenimento).
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUADRO RESUMO DE FÓRMULAS LISTA 8 -->
+      <div class="bg-cyber-900/90 border border-cyber-border rounded-lg p-3.5">
+        <h3 class="font-tech text-xs sm:text-sm font-bold text-cyber-cyan flex items-center gap-2 mb-3">
+          <i class="fa-solid fa-square-root-variable"></i> Quadro Sinótico de Fórmulas // Cinética
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs font-mono">
+          
+          <div class="bg-cyber-800/80 p-2.5 rounded border border-cyber-border/80">
+            <span class="text-cyber-cyan font-bold block text-[11px] mb-1">Equação de Avrami</span>
+            <div class="overflow-x-auto text-xs my-1 text-white">$y = 1 - \exp(-kt^n)$</div>
+            <p class="text-slate-400 text-[10px]">Fração transformada $y$ em função do tempo $t$.</p>
+          </div>
+
+          <div class="bg-cyber-800/80 p-2.5 rounded border border-cyber-border/80">
+            <span class="text-cyber-emerald font-bold block text-[11px] mb-1">Taxa de Resfriamento</span>
+            <div class="overflow-x-auto text-xs my-1 text-white">$\text{Taxa} = \frac{\Delta T}{t} = \frac{727 - T_{\text{joelho}}}{t_{\text{joelho}}}$</div>
+            <p class="text-slate-400 text-[10px]">Taxa crítica ($^\circ\text{C/s}$) para evitar perlita.</p>
+          </div>
+
+          <div class="bg-cyber-800/80 p-2.5 rounded border border-cyber-border/80">
+            <span class="text-cyber-amber font-bold block text-[11px] mb-1">Hierarquia de Dureza</span>
+            <div class="overflow-x-auto text-xs my-1 text-white">$\text{Esf} < P_{\text{grossa}} < P_{\text{fina}} < B < M$</div>
+            <p class="text-slate-400 text-[10px]">Ductilidade segue a ordem inversa.</p>
+          </div>
+
+          <div class="bg-cyber-800/80 p-2.5 rounded border border-cyber-border/80">
+            <span class="text-cyber-crimson font-bold block text-[11px] mb-1">Reação Eutetóide</span>
+            <div class="overflow-x-auto text-xs my-1 text-white">$\gamma(0,76\%) \xrightarrow{727^\circ\text{C}} \alpha + \text{Fe}_3\text{C}$</div>
+            <p class="text-slate-400 text-[10px]">Base para curvas TTT isotérmicas.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIMULADOR INTERATIVO DE AVRAMI & CINÉTICA -->
+      <div class="hud-border bg-cyber-800/60 p-3.5 rounded-lg">
+        <div class="flex items-center justify-between gap-1 mb-2">
+          <h4 class="font-tech text-xs sm:text-sm font-bold text-white flex items-center gap-1.5">
+            <i class="fa-solid fa-wave-square text-cyber-cyan"></i>
+            Simulador Cinético de Avrami ($y = 1 - e^{-kt^n}$)
+          </h4>
+          <span class="text-[9px] font-mono px-1.5 py-0.5 bg-cyber-cyan/20 text-cyber-cyan rounded">INTERATIVO</span>
+        </div>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 items-center">
+          <div class="bg-cyber-900/90 p-3 rounded border border-cyber-border font-mono text-xs space-y-2">
+            <div>
+              <div class="flex justify-between text-[11px] mb-0.5">
+                <span>Expoente ($n$):</span>
+                <span id="avrami-n-val" class="text-cyber-cyan font-bold">1.7</span>
+              </div>
+              <input type="range" id="avrami-n" min="1.0" max="4.0" step="0.1" value="1.7" class="w-full accent-cyber-cyan" oninput="updateAvramiSim()">
+            </div>
+            <div>
+              <div class="flex justify-between text-[11px] mb-0.5">
+                <span>Tempo $t_{50\%}$ (s):</span>
+                <span id="avrami-t50-val" class="text-cyber-emerald font-bold">100 s</span>
+              </div>
+              <input type="range" id="avrami-t50" min="10" max="500" step="10" value="100" class="w-full accent-cyber-emerald" oninput="updateAvramiSim()">
+            </div>
+            <div class="grid grid-cols-2 gap-2 pt-1.5 border-t border-cyber-border/70 text-center">
+              <div class="p-1.5 bg-cyber-800 rounded">
+                <span class="text-slate-400 block text-[9px]">CONSTANTE $k$</span>
+                <span id="avrami-k-res" class="text-xs font-bold text-cyber-amber">2.76e-4</span>
+              </div>
+              <div class="p-1.5 bg-cyber-800 rounded">
+                <span class="text-slate-400 block text-[9px]">TEMPO $t_{99\%}$</span>
+                <span id="avrami-t99-res" class="text-sm font-bold text-cyber-cyan font-tech">305 s</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="md:col-span-2 flex flex-col items-center justify-center bg-cyber-900/90 rounded p-2 border border-cyber-border">
+            <canvas id="avramiCanvas" width="360" height="165" class="w-full max-w-sm rounded"></canvas>
+            <span class="text-[10px] font-mono text-slate-400 mt-1">
+              Curva sigmoidal: Fração transformada ($y$) vs. Log(Tempo)
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUESTÕES DA LISTA 08 -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between pb-1">
+          <h3 class="font-tech text-sm sm:text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-cyber-cyan"></i> Resolução // Lista 08
+          </h3>
+          <span class="text-[10px] font-mono text-slate-400">12 Questões</span>
+        </div>
+
+        <div id="lista8-container" class="space-y-2">
+          <!-- Renderizado via script -->
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- TAB 4: PROVA 4 - 2ª ETAPA (MOBILE-FIRST) -->
+    <!-- ============================================================== -->
+    <section id="tab-prova" class="tab-content hidden space-y-5">
+      
+      <!-- RESUMO DA PROVA -->
+      <div class="hud-border bg-cyber-800/80 p-4 rounded-lg backdrop-blur">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-2.5 mb-3 border-b border-cyber-border gap-1.5">
+          <div class="flex items-center space-x-2">
+            <span class="p-1.5 rounded bg-cyber-amber/15 text-cyber-amber text-sm">
+              <i class="fa-solid fa-file-contract"></i>
+            </span>
+            <div>
+              <h2 class="text-base sm:text-lg font-tech font-bold text-white">
+                Prova 4 - 2ª Etapa // Resumo Oficial
+              </h2>
+              <p class="text-[10px] font-mono text-slate-400">Mecatrônica Industrial • IFCE Fortaleza • Prof. Eloy de Macedo</p>
+            </div>
+          </div>
+          <span class="font-mono text-[10px] self-start sm:self-auto px-2 py-0.5 bg-cyber-amber/20 text-cyber-amber border border-cyber-amber/30 rounded font-bold">
+            AVALIAÇÃO // NOTA 8,0
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs leading-relaxed">
+          <div class="p-3 rounded bg-cyber-900/70 border border-cyber-border/70">
+            <h3 class="font-tech text-xs font-bold text-cyber-cyan flex items-center gap-1 mb-1">
+              <i class="fa-solid fa-flask-vial"></i> 1. Sistema Sn-Pb a 150 °C
+            </h3>
+            <p class="text-slate-300">
+              Campo bifásico $\alpha + \beta$. Composições lidas nas linhas <em>solvus</em>: $C_\alpha = 11\%$ e $C_\beta = 99\%$ Sn.
+            </p>
+          </div>
+
+          <div class="p-3 rounded bg-cyber-900/70 border border-cyber-border/70">
+            <h3 class="font-tech text-xs font-bold text-cyber-emerald flex items-center gap-1 mb-1">
+              <i class="fa-solid fa-calculator"></i> 2. Alavanca Reversa
+            </h3>
+            <p class="text-slate-300">
+              Dada a fração de ferrita total $W_\alpha = 0,94$, isola-se o teor de carbono da liga: $C_0 = 0,42\text{ %p C}$.
+            </p>
+          </div>
+
+          <div class="p-3 rounded bg-cyber-900/70 border border-cyber-border/70">
+            <h3 class="font-tech text-xs font-bold text-cyber-amber flex items-center gap-1 mb-1">
+              <i class="fa-solid fa-weight-hanging"></i> 3. Balanço em 2,5 kg de Aço
+            </h3>
+            <p class="text-slate-300">
+              Aço hipoeutetoide ($0,65\% < 0,76\%$). Ferrita proeutetoide ($0,38\text{ kg}$) + Perlita ($2,12\text{ kg}$).
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUADRO RESUMO DE FÓRMULAS DA PROVA -->
+      <div class="bg-cyber-900/90 border border-cyber-border rounded-lg p-3.5">
+        <h3 class="font-tech text-xs sm:text-sm font-bold text-cyber-amber flex items-center gap-2 mb-3">
+          <i class="fa-solid fa-square-root-variable"></i> Fórmulas Aplicadas na Prova
+        </h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs font-mono">
+          
+          <div class="bg-cyber-800/80 p-2.5 rounded border border-cyber-border/80">
+            <span class="text-cyber-cyan font-bold block text-[11px] mb-1">Tie-Line Isoterma</span>
+            <div class="overflow-x-auto text-xs my-1 text-white">Extremidades no Solvus</div>
+            <p class="text-slate-400 text-[10px]">Determina composição de cada fase.</p>
+          </div>
+
+          <div class="bg-cyber-800/80 p-2.5 rounded border border-cyber-border/80">
+            <span class="text-cyber-emerald font-bold block text-[11px] mb-1">Alavanca Global Ferrita</span>
+            <div class="overflow-x-auto text-xs my-1 text-white">$W_\alpha = \frac{6,70 - C_0}{6,70 - 0,022}$</div>
+            <p class="text-slate-400 text-[10px]">Fração total de ferrita.</p>
+          </div>
+
+          <div class="bg-cyber-800/80 p-2.5 rounded border border-cyber-border/80">
+            <span class="text-cyber-amber font-bold block text-[11px] mb-1">Microconstituintes</span>
+            <div class="overflow-x-auto text-xs my-1 text-white">$W_{\alpha'} = \frac{0,76 - C_0}{0,738}$ | $W_p = \frac{C_0 - 0,022}{0,738}$</div>
+            <p class="text-slate-400 text-[10px]">Ferrita proeutetoide e perlita.</p>
+          </div>
+
+          <div class="bg-cyber-800/80 p-2.5 rounded border border-cyber-border/80">
+            <span class="text-cyber-crimson font-bold block text-[11px] mb-1">Massa em Quilos</span>
+            <div class="overflow-x-auto text-xs my-1 text-white">$m_i = W_i \times 2,5\text{ kg}$</div>
+            <p class="text-slate-400 text-[10px]">Massa das fases e constituintes.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUESTÕES DA PROVA 4 EM CARDS ACORDEÃO -->
+      <div class="space-y-3">
+        <div class="flex items-center justify-between pb-1">
+          <h3 class="font-tech text-sm sm:text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-cyber-amber"></i> Questões da Prova Resolvidas
+          </h3>
+          <span class="text-[10px] font-mono text-slate-400">3 Questões Oficiais</span>
+        </div>
+
+        <div id="prova-container" class="space-y-2">
+          
+          <!-- Questão 1 -->
+          <div class="border border-cyber-border/70 rounded-lg bg-cyber-900/60 overflow-hidden hover:border-cyber-cyan/40 transition">
+            <button onclick="toggleAccordion('prova-q0')" class="w-full px-3.5 py-3 flex items-center justify-between text-left bg-cyber-800/40 hover:bg-cyber-800/80 transition">
+              <div class="flex items-center space-x-2.5 min-w-0">
+                <span class="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/30 flex-shrink-0">
+                  Q1 (PE9.2)
+                </span>
+                <span class="font-tech text-xs sm:text-sm text-slate-200 font-semibold truncate">Fases e Composições na Liga Sn-Pb</span>
+              </div>
+              <i id="icon-prova-q0" class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform flex-shrink-0 ml-2"></i>
+            </button>
+            
+            <div id="prova-q0" class="p-3.5 space-y-2.5 border-t border-cyber-border/50 bg-cyber-900/40 text-xs">
+              <div class="text-slate-300 bg-cyber-800/30 p-2.5 rounded border border-cyber-border/40">
+                <strong class="text-white block font-mono text-[10px] mb-1 uppercase tracking-wider text-cyber-cyan">Enunciado Oficial:</strong>
+                Para uma liga contendo 40%p Sn - 60%p Pb à temperatura de 150 °C:<br>
+                a) Qual(is) fase(s) estão presente(s)?<br>
+                b) Qual (is) é (são) a(s) composição (ões) dessa(s) fase(s)?
+              </div>
+
+              <div class="text-slate-300 font-mono bg-cyber-950/70 p-2.5 rounded border border-cyber-border/60 space-y-1.5">
+                <strong class="text-white block font-mono text-[10px] uppercase tracking-wider text-cyber-amber">Desenvolvimento:</strong>
+                <div>• <strong>Item (a):</strong> Como $150\ ^\circ\text{C} < 183\ ^\circ\text{C}$ (eutética) e $40\%$ Sn está entre as linhas solvus, as fases presentes são <strong>$\alpha$</strong> e <strong>$\beta$</strong>.</div>
+                <div>• <strong>Item (b):</strong> Pela tie-line em $150\ ^\circ\text{C}$:<br>
+                - Fase $\alpha$: $C_\alpha = \mathbf{11\text{ %p Sn}}$ (89%p Pb)<br>
+                - Fase $\beta$: $C_\beta = \mathbf{99\text{ %p Sn}}$ (1%p Pb)</div>
+              </div>
+
+              <div class="p-2 rounded bg-cyber-emerald/10 border-l-4 border-cyber-emerald text-cyber-emerald font-mono text-[11px] space-y-0.5">
+                <div><strong>a) Fases:</strong> $\alpha$ e $\beta$</div>
+                <div><strong>b) Composições:</strong> $C_\alpha = 11\text{ %p Sn}$; $C_\beta = 99\text{ %p Sn}$</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Questão 2 -->
+          <div class="border border-cyber-border/70 rounded-lg bg-cyber-900/60 overflow-hidden hover:border-cyber-cyan/40 transition">
+            <button onclick="toggleAccordion('prova-q1')" class="w-full px-3.5 py-3 flex items-center justify-between text-left bg-cyber-800/40 hover:bg-cyber-800/80 transition">
+              <div class="flex items-center space-x-2.5 min-w-0">
+                <span class="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-cyber-emerald/20 text-cyber-emerald border border-cyber-emerald/30 flex-shrink-0">
+                  Q2 (9.51)
+                </span>
+                <span class="font-tech text-xs sm:text-sm text-slate-200 font-semibold truncate">Concentração de Carbono para W_α = 0,94</span>
+              </div>
+              <i id="icon-prova-q1" class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform flex-shrink-0 ml-2"></i>
+            </button>
+            
+            <div id="prova-q1" class="p-3.5 space-y-2.5 border-t border-cyber-border/50 bg-cyber-900/40 text-xs">
+              <div class="text-slate-300 bg-cyber-800/30 p-2.5 rounded border border-cyber-border/40">
+                <strong class="text-white block font-mono text-[10px] mb-1 uppercase tracking-wider text-cyber-cyan">Enunciado Oficial:</strong>
+                Qual é a concentração de carbono em uma liga ferro-carbono para a qual a fração de ferrita total é de 0,94?
+              </div>
+
+              <div class="text-slate-300 font-mono bg-cyber-950/70 p-2.5 rounded border border-cyber-border/60 space-y-1.5">
+                <strong class="text-white block font-mono text-[10px] uppercase tracking-wider text-cyber-amber">Desenvolvimento:</strong>
+                <div>Abaixo de $727\ ^\circ\text{C}$: $C_\alpha = 0,022\text{ %p C}$ e $C_{\text{Fe}_3\text{C}} = 6,70\text{ %p C}$.</div>
+                <div class="overflow-x-auto py-1">
+                  $$W_\alpha = \frac{6,70 - C_0}{6,70 - 0,022} \implies 0,94 = \frac{6,70 - C_0}{6,678}$$
+                  $$6,70 - C_0 = 0,94 \times 6,678 = 6,277 \implies C_0 = \mathbf{0,42\text{ %p C}}$$
+                </div>
+              </div>
+
+              <div class="p-2 rounded bg-cyber-emerald/10 border-l-4 border-cyber-emerald text-cyber-emerald font-mono text-[11px]">
+                <strong>Resultado:</strong> $C_0 = \mathbf{0,42\text{ %p C}}$ (Aço hipoeutetoide)
+              </div>
+            </div>
+          </div>
+
+          <!-- Questão 3 -->
+          <div class="border border-cyber-border/70 rounded-lg bg-cyber-900/60 overflow-hidden hover:border-cyber-cyan/40 transition">
+            <button onclick="toggleAccordion('prova-q2')" class="w-full px-3.5 py-3 flex items-center justify-between text-left bg-cyber-800/40 hover:bg-cyber-800/80 transition">
+              <div class="flex items-center space-x-2.5 min-w-0">
+                <span class="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-cyber-amber/20 text-cyber-amber border border-cyber-amber/30 flex-shrink-0">
+                  Q3 (9.54)
+                </span>
+                <span class="font-tech text-xs sm:text-sm text-slate-200 font-semibold truncate">Resfriamento de 2,5 kg de Austenita (0,65%p C)</span>
+              </div>
+              <i id="icon-prova-q2" class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform flex-shrink-0 ml-2"></i>
+            </button>
+            
+            <div id="prova-q2" class="p-3.5 space-y-3 border-t border-cyber-border/50 bg-cyber-900/40 text-xs">
+              <div class="text-slate-300 bg-cyber-800/30 p-2.5 rounded border border-cyber-border/40">
+                <strong class="text-white block font-mono text-[10px] mb-1 uppercase tracking-wider text-cyber-cyan">Enunciado Oficial:</strong>
+                Considere 2,5 kg de austenita contendo 0,65 %p C, resfriada até abaixo de 727 °C.<br>
+                a) Qual é a fase proeutetóide?<br>
+                b) Quantos quilogramas se formam de cementita e de ferrita total?<br>
+                c) Quantos quilogramas se formam da fase proeutetóide e de perlita?<br>
+                d) Esboce esquematicamente e identifique a microestrutura resultante.
+              </div>
+
+              <!-- Grid de itens compacto -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 font-mono">
+                <div class="bg-cyber-950/70 p-2.5 rounded border border-cyber-border/60">
+                  <span class="text-cyber-cyan font-bold block text-[10px] mb-1">Item a) Fase Proeutetoide</span>
+                  <p class="text-slate-300 text-[11px]">$0,65 < 0,76 \implies$ Hipoeutetoide.</p>
+                  <div class="mt-1 text-cyber-emerald font-bold">Ferrita ($\alpha$)</div>
+                </div>
+
+                <div class="bg-cyber-950/70 p-2.5 rounded border border-cyber-border/60">
+                  <span class="text-cyber-emerald font-bold block text-[10px] mb-1">Item b) Fases Totais</span>
+                  <div class="text-[10px] text-slate-300 space-y-0.5">
+                    <div>$W_\alpha = \frac{6,70 - 0,65}{6,678} \approx 0,906$</div>
+                    <div class="text-white font-bold">$m_\alpha = 2,26\text{ kg}$</div>
+                    <div class="pt-1 border-t border-cyber-border/40">$W_{\text{Fe}_3\text{C}} = 0,094$</div>
+                    <div class="text-white font-bold">$m_{\text{Fe}_3\text{C}} = 0,24\text{ kg}$</div>
+                  </div>
+                </div>
+
+                <div class="bg-cyber-950/70 p-2.5 rounded border border-cyber-border/60">
+                  <span class="text-cyber-amber font-bold block text-[10px] mb-1">Item c) Constituintes</span>
+                  <div class="text-[10px] text-slate-300 space-y-0.5">
+                    <div>$W_{\alpha'} = \frac{0,76 - 0,65}{0,738} \approx 0,149$</div>
+                    <div class="text-white font-bold">$m_{\alpha'} = 0,38\text{ kg}$</div>
+                    <div class="pt-1 border-t border-cyber-border/40">$W_p = 0,851$</div>
+                    <div class="text-white font-bold">$m_p = 2,12\text{ kg}$</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Esboço Esquemático Limpo -->
+              <div class="bg-cyber-950/70 p-3 rounded border border-cyber-border/60">
+                <span class="text-cyber-amber font-mono font-bold text-[11px] block mb-2">Item d) Esboço da Microestrutura Resultante</span>
+                
+                <div class="flex flex-col sm:flex-row items-center gap-3">
+                  <p class="text-slate-300 text-[11px] leading-relaxed flex-1">
+                    A microestrutura consiste em grãos claros de <strong>ferrita proeutetóide ($\alpha$)</strong> que nuclearam nos contornos da antiga austenita, circundando colônias de <strong>perlita</strong> formadas por lamelas alternadas de ferrita e cementita.
+                  </p>
+
+                  <div class="flex-shrink-0 p-2 bg-cyber-900 rounded border border-cyber-border">
+                    <svg viewBox="0 0 200 130" class="w-44 h-auto">
+                      <defs>
+                        <pattern id="pearlitePatternMobile" width="8" height="8" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+                          <line x1="0" y1="0" x2="0" y2="8" stroke="#ffb703" stroke-width="1.8" />
+                          <line x1="4" y1="0" x2="4" y2="8" stroke="#1f3460" stroke-width="1.8" />
+                        </pattern>
+                      </defs>
+                      <circle cx="100" cy="65" r="55" fill="#0d1527" stroke="#00f0ff" stroke-width="1.5"/>
+                      
+                      <!-- Colônias -->
+                      <path d="M65 35 Q85 30 110 40 Q95 70 70 60 Z" fill="url(#pearlitePatternMobile)" stroke="#38bdf8" stroke-width="0.8"/>
+                      <path d="M115 45 Q140 40 145 70 Q125 90 105 70 Z" fill="url(#pearlitePatternMobile)" stroke="#38bdf8" stroke-width="0.8"/>
+                      <path d="M70 70 Q100 75 105 105 Q70 110 60 90 Z" fill="url(#pearlitePatternMobile)" stroke="#38bdf8" stroke-width="0.8"/>
+
+                      <!-- Rede Contínua de Ferrita Proeutetoide -->
+                      <path d="M50 65 Q80 63 100 65 Q125 67 150 65" fill="none" stroke="#e2e8f0" stroke-width="7" stroke-linecap="round"/>
+                      <path d="M100 15 Q102 45 100 65 Q98 90 100 115" fill="none" stroke="#e2e8f0" stroke-width="7" stroke-linecap="round"/>
+                      
+                      <text x="15" y="14" fill="#e2e8f0" font-size="8" font-family="JetBrains Mono" font-weight="bold">Ferrita proeutetoide (clara)</text>
+                      <text x="25" y="125" fill="#ffb703" font-size="8" font-family="JetBrains Mono" font-weight="bold">Perlita (lamelar)</text>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Respostas finais da Q3 -->
+              <div class="p-2 rounded bg-cyber-emerald/10 border-l-4 border-cyber-emerald text-cyber-emerald font-mono text-[11px] space-y-0.5">
+                <div><strong>a) Fase proeutetoide:</strong> Ferrita ($\alpha$)</div>
+                <div><strong>b) Massas totais:</strong> $m_\alpha = 2,26\text{ kg}$; $m_{\text{Fe}_3\text{C}} = 0,24\text{ kg}$</div>
+                <div><strong>c) Constituintes:</strong> $m_{\alpha'} = 0,38\text{ kg}$; $m_p = 2,12\text{ kg}$</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-cyber-border/60 bg-cyber-900/95 py-4 text-center text-[10px] font-mono text-slate-500">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-1.5">
+      <span>IFCE CAMPUS FORTALEZA • MECATRÔNICA INDUSTRIAL</span>
+      <span class="text-cyber-cyan/80">GUIA INTERATIVO // CIÊNCIA DOS MATERIAIS</span>
+    </div>
+  </footer>
+
+  <!-- DATA & LOGIC SCRIPT -->
+  <script>
+    // Dados da Lista 06
+    const lista6Data = [
+      {
+        num: "1",
+        title: "Tamanho máximo de defeito superficial em vidro (Griffith)",
+        enunciado: "Uma placa relativamente grande de um vidro é submetida a uma tensão de tração de 40 MPa. Se a energia de superfície específica e o módulo de elasticidade para esse vidro são de $0,3\\text{ J/m}^2$ e $69\\text{ GPa}$, respectivamente, determine o comprimento máximo que um defeito de superfície pode ter sem que haja fratura.",
+        calculo: "$$a = \\frac{2E\\gamma_s}{\\pi \\sigma_c^2} = \\frac{2 \\times (69 \\times 10^9) \\times 0,3}{\\pi \\times (40 \\times 10^6)^2} = \\frac{41,4 \\times 10^9}{5,0265 \\times 10^{15}} \\approx 8,24 \\times 10^{-6}\\text{ m}$$",
+        resp: "$a = 8,2 \\times 10^{-6}\\text{ m}$ ($8,2\\ \\mu\\text{m}$)"
+      },
+      {
+        num: "2",
+        title: "Tensão máxima na ponta de trinca interna",
+        enunciado: "Qual é a magnitude da tensão máxima que existe na extremidade de uma trinca interna que possui um raio de curvatura de $2,5 \\times 10^{-4}\\text{ mm}$ e um comprimento de trinca de $2,5 \\times 10^{-2}\\text{ mm}$ quando uma tensão de tração de $170\\text{ MPa}$ é aplicada?",
+        calculo: "$$a = \\frac{2,5 \\times 10^{-2}}{2} = 1,25 \\times 10^{-2}\\text{ mm}$$<br>$$\\sigma_m = 2\\sigma_0 \\left(\\frac{a}{\\rho_e}\\right)^{1/2} = 2(170) \\left(\\frac{1,25 \\times 10^{-2}}{2,5 \\times 10^{-4}}\\right)^{1/2} = 340 \\sqrt{50} \\approx 2404\\text{ MPa}$$",
+        resp: "$\\sigma_m = 2,4\\text{ GPa}$"
+      },
+      {
+        num: "3",
+        title: "Estimativa de resistência à fratura teórica",
+        enunciado: "Estime a resistência à fratura teórica para um material frágil quando se tem o conhecimento de que a fratura ocorre mediante a propagação de uma trinca de superfície com formato elíptico, que possui comprimento de $0,25\\text{ mm}$ e raio de curvatura de $1,2 \\times 10^{-3}\\text{ mm}$, quando uma tensão de $1200\\text{ MPa}$ é aplicada.",
+        calculo: "$$\\sigma_m = 2\\sigma_0 \\left(\\frac{a}{\\rho_e}\\right)^{1/2} = 2(1200) \\left(\\frac{0,25}{1,2 \\times 10^{-3}}\\right)^{1/2} = 2400 \\sqrt{208,33} \\approx 34.640\\text{ MPa}$$",
+        resp: "$\\sigma_m = 34,6\\text{ GPa}$"
+      },
+      {
+        num: "4",
+        title: "Avaliação de fratura em material cerâmico",
+        enunciado: "Um corpo de prova de um material cerâmico que possui módulo de elasticidade de $300\\text{ GPa}$ é puxado em tração com tensão de $900\\text{ MPa}$. Informar se irá fraturar sabendo que seu defeito mais sério é uma trinca interna com comprimento de $0,3\\text{ mm}$ e raio de $5 \\times 10^{-4}\\text{ mm}$. Por quê?",
+        calculo: "$$a = 0,15\\text{ mm} \\implies \\sigma_m = 2(900) \\sqrt{\\frac{0,15}{5 \\times 10^{-4}}} = 1800\\sqrt{300} \\approx 31,2\\text{ GPa}$$<br>$$\\sigma_{\\text{teórico}} \\approx \\frac{E}{10} = \\frac{300}{10} = 30\\text{ GPa}$$",
+        resp: "Ocorre fratura pois $\\sigma_m (31,2\\text{ GPa}) > E/10 (30\\text{ GPa})$."
+      },
+      {
+        num: "5",
+        title: "Tensão crítica em vidro de cal de soda",
+        enunciado: "Se a energia de superfície específica para um vidro de cal de soda é de $0,30\\text{ J/m}^2$ e $E = 69\\text{ GPa}$, calcule a tensão crítica exigida para propagação de uma trinca de superfície com comprimento de $0,05\\text{ mm}$.",
+        calculo: "$$\\sigma_c = \\left(\\frac{2E\\gamma_s}{\\pi a}\\right)^{1/2} = \\left(\\frac{2 \\times 69 \\times 10^9 \\times 0,30}{\\pi \\times 5 \\times 10^{-5}}\\right)^{1/2} = \\sqrt{2,6355 \\times 10^{14}} \\approx 16,23\\text{ MPa}$$",
+        resp: "$\\sigma_c = 16,2\\text{ MPa}$"
+      },
+      {
+        num: "6",
+        title: "Comprimento máximo permissível em poliestireno",
+        enunciado: "Um componente em poliestireno não deve falhar quando uma tensão de tração de $1,25\\text{ MPa}$ for aplicada. Determine o comprimento máximo permissível para uma trinca de superfície se $\\gamma_s = 0,50\\text{ J/m}^2$ e $E = 3,0\\text{ GPa}$.",
+        calculo: "$$a = \\frac{2E\\gamma_s}{\\pi \\sigma_c^2} = \\frac{2 \\times 3,0 \\times 10^9 \\times 0,50}{\\pi \\times (1,25 \\times 10^6)^2} \\approx 6,11 \\times 10^{-4}\\text{ m}$$",
+        resp: "$a = 0,61\\text{ mm}$"
+      },
+      {
+        num: "7",
+        title: "Diferenças entre K, tenacidade em tensão plana e deformação plana",
+        enunciado: "Cite as diferenças significativas que existem entre o fator de intensidade de tensão, a tenacidade à fratura em tensão plana, e a tenacidade à fratura em deformação plana.",
+        calculo: "• <strong>Fator de intensidade de tensão ($K$):</strong> Medida analítica da amplificação de tensão na ponta da trinca ($K = Y\\sigma\\sqrt{\\pi a}$).<br>• <strong>Tenacidade em tensão plana:</strong> Resistência à fratura em chapas finas (depende da espessura da peça).<br>• <strong>Tenacidade em deformação plana ($K_{Ic}$):</strong> Propriedade intrínseca constante do material em peças espessas.",
+        resp: "Definição conceitual aplicada à mecânica da fratura."
+      },
+      {
+        num: "8",
+        title: "Verificação de fratura em aço liga 4340",
+        enunciado: "Um corpo de prova feito a partir de uma liga de aço 4340 ($K_{Ic} = 45\\text{ MPa}\\sqrt{\\text{m}}$) está exposto a uma tensão de $1000\\text{ MPa}$. Dizer se irá experimentar fratura sabendo que a maior trinca de superfície possui $0,75\\text{ mm}$ de comprimento ($Y = 1,0$).",
+        calculo: "$$\\sigma_c = \\frac{K_{Ic}}{Y\\sqrt{\\pi a}} = \\frac{45}{1,0 \\sqrt{\\pi \\times 0,75 \\times 10^{-3}}} = \\frac{45}{0,04854} \\approx 927\\text{ MPa}$$",
+        resp: "A fratura irá ocorrer pois $\\sigma (1000\\text{ MPa}) > \\sigma_c (927\\text{ MPa})$."
+      },
+      {
+        num: "9",
+        title: "Comprimento de trinca interna máxima em Al 7075-T651",
+        enunciado: "Calcule o comprimento de trinca interna máxima permissível para um componente em liga de alumínio 7075-T651 ($\sigma_y = 495\\text{ MPa}$, $K_{Ic} = 24\\text{ MPa}\\sqrt{\\text{m}}$) carregado à metade do limite de escoamento ($Y = 1,35$).",
+        calculo: "$$\\sigma = \\frac{495}{2} = 247,5\\text{ MPa} \\implies a = \\frac{1}{\\pi}\\left(\\frac{24}{1,35 \\times 247,5}\\right)^2 \\approx 1,64\\text{ mm}$$<br>$$2a = 2 \\times 1,64 = 3,28\\text{ mm}$$",
+        resp: "$2a = 3,3\\text{ mm}$"
+      },
+      {
+        num: "10",
+        title: "Temperatura de transição dúctil-frágil (Ensaio Charpy)",
+        enunciado: "A partir dos dados de energia de impacto Charpy em ferro fundido dúctil: (b) Determine a temperatura de transição pela média entre as energias máxima ($124\\text{ J}$) e mínima ($6\\text{ J}$). (c) Determine a temperatura de transição correspondente a $80\\text{ J}$.",
+        calculo: "• <strong>(b) Média:</strong> $(124 + 6)/2 = 65\\text{ J}$ (ocorre entre $-100\\ ^\\circ\\text{C}$ [73 J] e $-110\\ ^\\circ\\text{C}$ [52 J] $\\implies \\approx -104\\ ^\\circ\\text{C}$).<br>• <strong>(c) Para 80 J:</strong> Ocorre entre $-85\\ ^\\circ\\text{C}$ [100 J] e $-100\\ ^\\circ\\text{C}$ [73 J] ($\\approx -93\\ ^\\circ\\text{C}$).",
+        resp: "(b) $\\approx -104\\ ^\\circ\\text{C}$; (c) $\\approx -93\\ ^\\circ\\text{C}$"
+      },
+      {
+        num: "11",
+        title: "Parâmetros de tensão cíclica em ensaio de fadiga",
+        enunciado: "Um ensaio de fadiga foi conduzido onde a tensão média era de $50\\text{ MPa}$ e a amplitude da tensão era de $225\\text{ MPa}$. Calcule: (a) $\\sigma_{\\max}$ e $\\sigma_{\\min}$; (b) razão de tensão $R$; (c) intervalo de tensões $\\sigma_i$.",
+        calculo: "• $\\sigma_{\\max} = \\sigma_m + \\sigma_a = 50 + 225 = 275\\text{ MPa}$<br>• $\\sigma_{\\min} = \\sigma_m - \\sigma_a = 50 - 225 = -225\\text{ MPa}$ (ou $175\\text{ MPa}$ no gabarito)<br>• $R = \\sigma_{\\min}/\\sigma_{\\max}$ e $\\sigma_i = 2\\sigma_a = 450\\text{ MPa}$",
+        resp: "(a) $\\sigma_{\\max}=275\\text{ MPa}$, $\\sigma_{\\min}=-225\\text{ MPa}$; (b) $R=-0,82$ (ou $-0,64$); (c) $\\sigma_i=450\\text{ MPa}$"
+      },
+      {
+        num: "12",
+        title: "Dimensionamento de eixo em aço 1045 sob fadiga",
+        enunciado: "Uma barra cilíndrica em aço 1045 ($\sigma_{\\text{lim}} \\approx 310\\text{ MPa}$) está sujeita a um ciclo repetitivo com amplitude de carga de $22.000\\text{ N}$. Compute o diâmetro mínimo permissível com fator de segurança $2,0$.",
+        calculo: "$$\\sigma_{\\text{adm}} = \\frac{310}{2} = 155\\text{ MPa} \\implies A = \\frac{F}{\\sigma_{\\text{adm}}} = \\frac{22.000}{155 \\times 10^6} = 1,419 \\times 10^{-4}\\text{ m}^2$$<br>$$d_0 = \\sqrt{\\frac{4A}{\\pi}} = 0,01344\\text{ m} = 13,4\\text{ mm}$$",
+        resp: "$d_0 = 13,4\\text{ mm}$"
+      },
+      {
+        num: "13",
+        title: "Vida em fadiga de bastão de latão vermelho",
+        enunciado: "Um bastão cilíndrico com diâmetro de $8,0\\text{ mm}$ em latão vermelho sofre cargas de tração e compressão máximas de $7500\\text{ N}$ e $-7500\\text{ N}$. Determine sua vida em fadiga.",
+        calculo: "$$A = \\frac{\\pi (0,008)^2}{4} = 5,026 \\times 10^{-5}\\text{ m}^2 \\implies \\sigma_a = \\frac{7500}{5,026 \\times 10^{-5}} \\approx 149,2\\text{ MPa}$$<br>Consultando a curva S-N do latão vermelho para $\\approx 150\\text{ MPa}$:",
+        resp: "$N = 1,0 \\times 10^5\\text{ ciclos}$"
+      },
+      {
+        num: "14",
+        title: "Cargas máxima e mínima em liga de alumínio 2014-T6",
+        enunciado: "Um bastão cilíndrico de $12,5\\text{ mm}$ de diâmetro em liga 2014-T6 é submetido a carregamento cíclico para vida de $1,0 \\times 10^7$ ciclos ($\\sigma_m = 50\\text{ MPa}$). Calcule $F_{\\max}$ e $F_{\\min}$.",
+        calculo: "Pela curva S-N a $10^7$ ciclos, $\\sigma_a \\approx 160\\text{ MPa}$.<br>$\\sigma_{\\max} = 50 + 160 = 210\\text{ MPa}$ e $\\sigma_{\\min} = 50 - 160 = -110\\text{ MPa}$.<br>$A = 1,227 \\times 10^{-4}\\text{ m}^2 \\implies F_{\\max} = 25.800\\text{ N}$ e $F_{\\min} = -13.500\\text{ N}$.",
+        resp: "$F_{\\max} = 25.800\\text{ N}$; $F_{\\min} = -13.500\\text{ N}$"
+      },
+      {
+        num: "15",
+        title: "Diferença entre estrias e marcas de praia na fadiga",
+        enunciado: "Explique sucintamente a diferença que existe entre as estrias e as marcas de praia da fadiga, tanto em termos de (a) dimensões como de (b) origem.",
+        calculo: "• <strong>(a) Dimensões:</strong> Marcas de praia são macroscópicas (visíveis a olho nu); estrias são microscópicas (exigem MEV/MET).<br>• <strong>(b) Origem:</strong> Marcas de praia vêm de interrupções/variações de carga; estrias representam o avanço da trinca a cada ciclo.",
+        resp: "Macroscópica/interrupções vs. Microscópica/ciclo individual."
+      },
+      {
+        num: "16",
+        title: "Medidas para aumentar a resistência à fadiga",
+        enunciado: "Liste quatro medidas que podem ser tomadas para aumentar a resistência à fadiga de uma liga metálica.",
+        calculo: "1. Polimento superficial (remoção de riscos).<br>2. Introdução de tensões residuais compressivas (<em>shot peening</em>).<br>3. Suavização geométrica (adoçamentos/raios de concordância).<br>4. Endurecimento superficial térmico (cementação ou nitretação).",
+        resp: "Quatro técnicas clássicas de engenharia mecânica e metalúrgica."
+      },
+      {
+        num: "17",
+        title: "Tamanho crítico de trinca superficial em aço de alta resistência",
+        enunciado: "Um aço de alta resistência tem limite de escoamento de $1460\\text{ MPa}$ e $K_{Ic} = 98\\text{ MPa}\\sqrt{\\text{m}}$. Calcule o tamanho de uma trinca na superfície que causará falha sob tensão de $1/2\\text{ LE}$ ($Y=1,0$).",
+        calculo: "$$\\sigma = \\frac{1460}{2} = 730\\text{ MPa} \\implies a = \\frac{1}{\\pi}\\left(\\frac{98}{1,0 \\times 730}\\right)^2 = 0,00574\\text{ m} = 5,74\\text{ mm}$$",
+        resp: "$a = 5,74\\text{ mm}$"
+      },
+      {
+        num: "18",
+        title: "Tensão máxima de serviço em cerâmicas (SiC e Zircônia)",
+        enunciado: "Dado que uma inspeção garante que uma peça cerâmica não terá defeitos maiores que $25\\ \\mu\\text{m}$, calcule a tensão de serviço máxima para (a) SiC ($K_{Ic} = 3\\text{ MPa}\\sqrt{\\text{m}}$) e (b) zircônia parcialmente estabilizada ($K_{Ic} = 9\\text{ MPa}\\sqrt{\\text{m}}$).",
+        calculo: "$$\\sigma_c = \\frac{K_{Ic}}{\\sqrt{\\pi \\times 25 \\times 10^{-6}}} = \\frac{K_{Ic}}{0,008862}$$<br>• (a) SiC: $3 / 0,008862 \\approx 339\\text{ MPa}$<br>• (b) Zircônia: $9 / 0,008862 \\approx 1016\\text{ MPa}$",
+        resp: "(a) $\\sigma_c = 339\\text{ MPa}$; (b) $\\sigma_c = 1020\\text{ MPa}$"
+      },
+      {
+        num: "19",
+        title: "Síntese conceitual: Fratura, Fadiga e Fluência",
+        enunciado: "Fale sobre: a) Fratura; b) Fadiga; c) Fluência.",
+        calculo: "• <strong>a) Fratura:</strong> Ruptura sob carga estática (dúctil com deformação ou frágil sem deformação).<br>• <strong>b) Fadiga:</strong> Falha progressiva sob tensões cíclicas inferiores ao escoamento.<br>• <strong>c) Fluência:</strong> Deformação plástica contínua dependente do tempo sob carga constante em altas temperaturas.",
+        resp: "Resumo dos 3 principais modos de falha mecânica."
+      }
+    ];
+
+    // Dados da Lista 07
+    const lista7Data = [
+      {
+        num: "1",
+        title: "Diferença entre equilíbrio de fases e metaestabilidade",
+        enunciado: "Qual é a diferença entre os estados de equilíbrio de fases e metaestabilidade?",
+        calculo: "• <strong>Equilíbrio:</strong> Mínimo global de energia livre de Gibbs; características constantes no tempo.<br>• <strong>Metaestabilidade:</strong> Mínimo local de energia livre; o sistema fica retido cineticamente por uma barreira energética (ex: martensita).",
+        resp: "Estabilidade termodinâmica global vs. estado cineticamente retido."
+      },
+      {
+        num: "2",
+        title: "Fases e composições da liga 40%p Sn - 60%p Pb a 150 °C",
+        enunciado: "Para uma liga contendo 40%p Sn - 60%p Pb à temperatura de $150\\ ^\\circ\\text{C}$: (a) Qual(is) fase(s) estão presente(s)? (b) Qual(is) é(são) a(s) composição(ões) dessa(s) fase(s)?",
+        calculo: "No diagrama Pb-Sn a $150\\ ^\\circ\\text{C}$ (região bifásica $\\alpha + \\beta$):<br>Linhas solvus apontam $C_\\alpha = 10\\%\\text{p Sn}$ e $C_\\beta = 98\\%\\text{p Sn}$.",
+        resp: "(a) Fases $\\alpha$ e $\\beta$; (b) $C_\\alpha = 10\\%\\text{p Sn}$ ($90\\%\\text{p Pb}$), $C_\\beta = 98\\%\\text{p Sn}$ ($2\\%\\text{p Pb}$)"
+      },
+      {
+        num: "3",
+        title: "Frações mássica e volumétrica da liga Sn-Pb a 150 °C",
+        enunciado: "Para a liga chumbo-estanho da questão anterior, calcule as quantidades relativas de cada fase em termos da (a) fração mássica e (b) fração volumétrica ($\\rho_{\\text{Pb}} = 11,23$, $\\rho_{\\text{Sn}} = 7,24\\text{ g/cm}^3$).",
+        calculo: "$$W_\\alpha = \\frac{98 - 40}{98 - 10} = 0,66 \\quad | \\quad W_\\beta = 1 - 0,66 = 0,34$$<br>$$\\rho_\\alpha = 10,59\\text{ g/cm}^3, \\ \\rho_\\beta = 7,29\\text{ g/cm}^3 \\implies V_\\alpha = \\frac{0,66/10,59}{0,66/10,59 + 0,34/7,29} = 0,57$$",
+        resp: "(a) $W_\\alpha = 0,66$, $W_\\beta = 0,34$; (b) $V_\\alpha = 0,57$, $V_\\beta = 0,43$"
+      },
+      {
+        num: "4",
+        title: "Frações de fases e microconstituintes em aço 0,35%p C",
+        enunciado: "Para uma liga com $99,65\\%\\text{p Fe} - 0,35\\%\\text{p C}$ imediatamente abaixo da eutetóide, determine: (a) ferrita total e cementita; (b) ferrita proeutetóide e perlita; (c) ferrita eutetóide.",
+        calculo: "$$W_\\alpha = \\frac{6,70 - 0,35}{6,678} = 0,95 \\quad | \\quad W_{\\text{Fe}_3\\text{C}} = 0,05$$<br>$$W_p = \\frac{0,35 - 0,022}{0,738} = 0,44 \\quad | \\quad W_{\\alpha'} = 0,56 \\quad | \\quad W_{\\alpha e} = 0,95 - 0,56 = 0,39$$",
+        resp: "(a) $W_\\alpha=0,95, W_{\\text{Fe}_3\\text{C}}=0,05$; (b) $W_p=0,44, W_{\\alpha'}=0,56$; (c) $W_{\\alpha e}=0,39$"
+      },
+      {
+        num: "5",
+        title: "Concentração de carbono para W_α = 0,94",
+        enunciado: "Qual é a concentração de carbono em uma liga ferro-carbono para a qual a fração de ferrita total é de $0,94$?",
+        calculo: "$$0,94 = \\frac{6,70 - C_0}{6,70 - 0,022} \\implies 6,70 - C_0 = 6,277 \\implies C_0 = 0,42\\%\\text{p C}$$",
+        resp: "$C_0 = 0,42\\%\\text{p C}$"
+      },
+      {
+        num: "6",
+        title: "Identificação da fase proeutetóide a partir de frações totais",
+        enunciado: "Qual é a fase proeutetóide para uma liga ferro-carbono na qual as frações mássicas de ferrita e cementita total são de $0,92$ e $0,08$, respectivamente? Por quê?",
+        calculo: "$$0,08 = \\frac{C_0 - 0,022}{6,678} \\implies C_0 = 0,56\\%\\text{p C} < 0,76\\%\\text{p C}$$",
+        resp: "Ferrita ($\\alpha$), pois $C_0 = 0,56\\%\\text{p C} < 0,76\\%\\text{p C}$ (aço hipoeutetóide)."
+      },
+      {
+        num: "7",
+        title: "Resfriamento de 1,0 kg de austenita hipereutetóide (1,15%p C)",
+        enunciado: "Considere $1,0\\text{ kg}$ de austenita contendo $1,15\\%\\text{p C}$, resfriada até abaixo de $727\\ ^\\circ\\text{C}$. Determine fase proeutetóide, massas totais e massas de constituintes.",
+        calculo: "• Como $1,15 > 0,76$, é hipereutetóide $\\implies$ Cementita ($\\text{Fe}_3\\text{C}$).<br>• $W_\\alpha = (6,70-1,15)/6,678 = 0,83 \\implies 0,83\\text{ kg}$; $m_{\\text{Fe}_3\\text{C}} = 0,17\\text{ kg}$.<br>• $W_p = (6,70-1,15)/(6,70-0,76) = 0,93 \\implies 0,93\\text{ kg}$; $m_{\\text{Fe}_3\\text{C}'} = 0,07\\text{ kg}$.",
+        resp: "(a) $\\text{Fe}_3\\text{C}$; (b) $m_\\alpha=0,83\\text{ kg}, m_{\\text{Fe}_3\\text{C}}=0,17\\text{ kg}$; (c) $m_p=0,93\\text{ kg}, m_{\\text{Fe}_3\\text{C}'}=0,07\\text{ kg}$"
+      },
+      {
+        num: "8",
+        title: "Resfriamento de 2,5 kg de austenita hipoeutetóide (0,65%p C)",
+        enunciado: "Considere $2,5\\text{ kg}$ de austenita contendo $0,65\\%\\text{p C}$, resfriada até abaixo de $727\\ ^\\circ\\text{C}$. Determine fase proeutetóide e massas formadas.",
+        calculo: "• Hipoeutetóide ($0,65 < 0,76$) $\\implies$ Ferrita ($\\alpha$).<br>• $m_\\alpha = 0,906 \\times 2,5 = 2,26\\text{ kg}$; $m_{\\text{Fe}_3\\text{C}} = 0,094 \\times 2,5 = 0,23\\text{ kg}$.<br>• $m_p = 0,851 \\times 2,5 = 2,13\\text{ kg}$; $m_{\\alpha'} = 0,149 \\times 2,5 = 0,38\\text{ kg}$.",
+        resp: "(a) Ferrita ($\\alpha$); (b) $2,26\\text{ kg}$ e $0,23\\text{ kg}$; (c) $0,38\\text{ kg}$ e $2,13\\text{ kg}$"
+      },
+      {
+        num: "9",
+        title: "Frações de ferrita proeutetóide e perlita em aço 0,25%p C",
+        enunciado: "Calcule as frações mássicas de ferrita proeutetóide e de perlita que se formam em uma liga ferro-carbono que contém $0,25\\%\\text{p C}$.",
+        calculo: "$$W_{\\alpha'} = \\frac{0,76 - 0,25}{0,76 - 0,022} = 0,69 \\quad | \\quad W_p = \\frac{0,25 - 0,022}{0,76 - 0,022} = 0,31$$",
+        resp: "$W_{\\alpha'} = 0,69$; $W_p = 0,31$"
+      },
+      {
+        num: "10",
+        title: "Determinação de C0 a partir de ferrita proeutetóide e perlita",
+        enunciado: "A microestrutura de uma liga ferro-carbono consiste em ferrita proeutetóide ($0,286$) e perlita ($0,714$). Determine a concentração de carbono nessa liga.",
+        calculo: "$$0,714 = \\frac{C_0 - 0,022}{0,76 - 0,022} \\implies C_0 - 0,022 = 0,527 \\implies C_0 = 0,55\\%\\text{p C}$$",
+        resp: "$C_0 = 0,55\\%\\text{p C}$"
+      },
+      {
+        num: "11",
+        title: "Aquecimento lento da liga isomorfa 70%p Ni - 30%p Cu",
+        enunciado: "Uma liga cobre-níquel com composição de $70\\%\\text{p Ni} - 30\\%\\text{p Cu}$ é aquecida lentamente a partir de $1300\\ ^\\circ\\text{C}$. Determine temperaturas de fusão e composições.",
+        calculo: "Pelo diagrama Cu-Ni:<br>(a) Início da fusão (linha solidus): $\\approx 1350\\ ^\\circ\\text{C}$.<br>(b) Composição do 1º líquido (liquidus): $\\approx 81\\%\\text{p Ni}$.<br>(c) Fusão completa (liquidus): $\\approx 1380\\ ^\\circ\\text{C}$.<br>(d) Último sólido remanescente: $70\\%\\text{p Ni}$.",
+        resp: "(a) $1350\\ ^\\circ\\text{C}$; (b) $81\\%\\text{p Ni}$; (c) $1380\\ ^\\circ\\text{C}$; (d) $70\\%\\text{p Ni}$"
+      },
+      {
+        num: "12",
+        title: "Liga cobre-prata (25%p Ag - 75%p Cu) a 775 °C",
+        enunciado: "Para uma liga cobre-prata com composição de $25\\%\\text{p Ag} - 75\\%\\text{p Cu}$ a $775\\ ^\\circ\\text{C}$, determine: (a) frações mássicas de $\\alpha$ e $\\beta$; (b) $\\alpha$ primário e eutético; (c) $\\alpha$ eutética.",
+        calculo: "$$W_\\alpha = \\frac{91,2 - 25}{91,2 - 8,0} = 0,80 \\quad | \\quad W_\\beta = 0,20$$<br>$$W_{\\alpha'} = \\frac{71,9 - 25}{71,9 - 8,0} = 0,73 \\quad | \\quad W_e = 0,27 \\quad | \\quad W_{\\alpha e} = 0,80 - 0,73 = 0,07$$",
+        resp: "(a) $W_\\alpha=0,80, W_\\beta=0,20$; (b) $W_{\\alpha'}=0,73, W_e=0,27$; (c) $W_{\\alpha e}=0,07$"
+      }
+    ];
+
+    // Dados da Lista 08 (Transformações de Fases em Metais)
+    const lista8Data = [
+      {
+        num: "1",
+        title: "Estágios da formação de partículas de uma nova fase",
+        enunciado: "Cite os dois estágios envolvidos na formação de partículas de uma nova fase. Descreva sucintamente.",
+        calculo: "• <strong>Nucleação:</strong> Formação inicial de pequenos aglomerados estáveis (núcleos) da nova fase capazes de sobreviver e crescer sem se dissolver.<br>• <strong>Crescimento:</strong> Expansão volumétrica desses núcleos estáveis através da difusão atômica de longo alcance.",
+        resp: "Nucleação e Crescimento."
+      },
+      {
+        num: "2",
+        title: "Cálculo cinético com a Equação de Avrami (t para 99%)",
+        enunciado: "Para uma transformação que obedece à equação de Avrami com $n = 1,7$, sabendo que após $100\\text{ s}$ a reação está $50\\%$ concluída, quanto tempo total será necessário para atingir $99\\%$?",
+        calculo: "$$0,50 = 1 - \\exp(-k \\cdot 100^{1,7}) \\implies k = \\frac{-\\ln(0,50)}{100^{1,7}} \\approx 2,7595 \\times 10^{-4}\\text{ s}^{-1,7}$$<br>$$0,99 = 1 - \\exp(-k \\cdot t^{1,7}) \\implies t^{1,7} = \\frac{-\\ln(0,01)}{2,7595 \\times 10^{-4}} \\approx 16688,4 \\implies t = (16688,4)^{1/1,7} \\approx 305\\text{ s}$$",
+        resp: "$t = 305\\text{ s}$"
+      },
+      {
+        num: "3",
+        title: "Comparação de dureza: Perlita fina, grosseira e esferoidita",
+        enunciado: "Explique sucintamente por que a perlita fina é mais dura e mais resistente do que a perlita grosseira, que por sua vez é mais dura e mais resistente do que a cementita globulizada.",
+        calculo: "A resistência depende da área de contorno de fase entre ferrita ($\\alpha$) e cementita ($\\text{Fe}_3\\text{C}$), que bloqueia o movimento das discordâncias. A perlita fina possui lamelas muito próximas e grande área interfacial; a grosseira tem lamelas espessas; e a cementita globulizada minimiza a área interfacial com esferas dispersas.",
+        resp: "Quanto maior a área interfacial $\\alpha / \\text{Fe}_3\\text{C}$, maior o impedimento às discordâncias e maior a dureza."
+      },
+      {
+        num: "4",
+        title: "Microestruturas e propriedades: Perlita, Bainita e Globulizada",
+        enunciado: "Cite resumidamente as diferenças que existem entre a perlita, a bainita, e a cementita globulizada em relação às suas microestruturas e propriedades mecânicas.",
+        calculo: "• <strong>Perlita:</strong> Lamelas alternadas de $\\alpha$ e $\\text{Fe}_3\\text{C}$; resistência intermediária e boa tenacidade.<br>• <strong>Bainita:</strong> Matriz ferrítica com agulhas/ripas finíssimas de $\\text{Fe}_3\\text{C}$; mais dura e resistente que a perlita fina.<br>• <strong>Cementita Globulizada:</strong> Glóbulos de $\\text{Fe}_3\\text{C}$ em matriz de ferrita; máxima ductilidade e mínima dureza.",
+        resp: "Diferenciação morfológica (lamelas vs. agulhas vs. esferas) e mecânica."
+      },
+      {
+        num: "5",
+        title: "Diferenças entre transformações martensítica e perlítica",
+        enunciado: "Cite duas diferenças principais entre as transformações martensítica e perlítica.",
+        calculo: "1. <strong>Difusão atômica:</strong> A perlítica ocorre por difusão de carbono e ferro; a martensítica é adifusional (cisalhamento instantâneo da rede).<br>2. <strong>Dependência do tempo:</strong> A perlítica depende de tempo e temperatura; a martensítica é atérmica (depende apenas da temperatura abaixo de $M_s$).",
+        resp: "Difusional/dependente do tempo vs. Adifusional/atérmica."
+      },
+      {
+        num: "6",
+        title: "Diagramas TRC em aços ao carbono vs. aços-liga",
+        enunciado: "Cite duas diferenças importantes entre os diagramas de transformação por resfriamento contínuo para os aços comuns ao carbono e aços-liga.",
+        calculo: "1. Nos <strong>aços-liga</strong>, os elementos de liga retardam a difusão, deslocando o nariz perlítico para a direita (tempos maiores).<br>2. Nos <strong>aços-liga</strong> aparece um 'joelho' bainítico distinto e separado do nariz perlítico, ausente nos aços-carbono comuns.",
+        resp: "Deslocamento das curvas para a direita e surgimento do nariz bainítico nos aços-liga."
+      },
+      {
+        num: "7",
+        title: "Leitura do diagrama TTT (50% Perlita e 50% Bainita)",
+        enunciado: "A) Quanto tempo é necessário para a austenita se transformar em 50% perlita a $600\\ ^\\circ\\text{C}$? B) Quanto tempo é necessário para a austenita se transformar em 50% bainita a $300\\ ^\\circ\\text{C}$? (Figura 1)",
+        calculo: "Cruzando a isoterma correspondente com a linha tracejada central de $50\\%$ de transformação no diagrama TTT (Fig. 1):<br>• A $600\\ ^\\circ\\text{C}$: $t \\approx 3,5\\text{ a }4\\text{ s}$.<br>• A $300\\ ^\\circ\\text{C}$: $t \\approx 500\\text{ s}$ ($\\approx 8,3\\text{ min}$).",
+        resp: "A) $\\approx 3,5\\text{ a }4\\text{ s}$; B) $\\approx 500\\text{ s}$"
+      },
+      {
+        num: "8",
+        title: "Tratamentos isotérmicos em aço eutetóide (0,77%p C)",
+        enunciado: "A) Calcule a microestrutura de um aço $0,77\\%\\text{p C}$ resfriado para $500\\ ^\\circ\\text{C}$, mantido por $5\\text{ s}$ e resfriado para $250\\ ^\\circ\\text{C}$. B) E se mantido 1 dia a $250\\ ^\\circ\\text{C}$ e resfriado ao ambiente? C) E se resfriado direto da parte (A) para o ambiente?",
+        calculo: "• <strong>(A)</strong> A $500\\ ^\\circ\\text{C}$ por $5\\text{ s}$, a reação perlítica atinge $\\approx 90\\%\\text{ a }100\\%$ (Perlita fina + até $10\\%$ austenita residual).<br>• <strong>(B)</strong> Em 1 dia a $250\\ ^\\circ\\text{C}$, a austenita residual transforma-se em bainita ($\\approx 90\\%$ perlita fina + $10\\%$ bainita).<br>• <strong>(C)</strong> Resfriando direto ao ambiente, a austenita residual vira martensita ($\\approx 90\\%$ perlita fina + $10\\%$ martensita).",
+        resp: "(A) ~90-100% Perlita fina; (B) Perlita fina + Bainita; (C) Perlita fina + Martensita"
+      },
+      {
+        num: "9",
+        title: "Estimativa da taxa crítica de resfriamento para evitar perlita",
+        enunciado: "Estime a taxa de resfriamento para evitar a formação de perlita em: (a) Aço $0,5\\%\\text{p C}$ (fig. 2); (b) Aço $0,77\\%\\text{p C}$ (fig. 1); (c) Aço $1,13\\%\\text{p C}$ (fig. 3).",
+        calculo: "$$\\text{Taxa} = \\frac{727 - T_{\\text{joelho}}}{t_{\\text{joelho}}}$$<br>• (a) $0,5\\%\\text{ C}$: $(727 - 550) / 0,42\\text{ s} \\approx 420\\ ^\\circ\\text{C/s}$<br>• (b) $0,77\\%\\text{ C}$: $(727 - 550) / 0,71\\text{ s} \\approx 250\\ ^\\circ\\text{C/s}$<br>• (c) $1,13\\%\\text{ C}$: $(727 - 550) / 0,19\\text{ s} \\approx 940\\ ^\\circ\\text{C/s}$",
+        resp: "(a) $\\sim 420\\ ^\\circ\\text{C/s}$; (b) $\\sim 250\\ ^\\circ\\text{C/s}$; (c) $\\sim 940\\ ^\\circ\\text{C/s}$"
+      },
+      {
+        num: "10",
+        title: "Tempo de austêmpera a 5 °C acima de Ms",
+        enunciado: "Calcule o tempo necessário para a austêmpera a $5\\ ^\\circ\\text{C}$ acima da temperatura $M_s$ para: (a) Aço $0,5\\%\\text{p C}$; (b) Aço $0,77\\%\\text{p C}$; (c) Aço $1,13\\%\\text{p C}$.",
+        calculo: "Lendo a curva de conclusão ($100\\%$ bainita) a $T = M_s + 5\\ ^\\circ\\text{C}$:<br>• (a) $T \\approx 330\\ ^\\circ\\text{C} \\implies t \\approx 180\\text{ s} = 3\\text{ min}$<br>• (b) $T \\approx 225\\ ^\\circ\\text{C} \\implies t \\approx 1,9 \\times 10^4\\text{ s} \\approx 5,3\\text{ h}$<br>• (c) $T \\approx 200\\ ^\\circ\\text{C} \\implies t \\approx 8,6 \\times 10^4\\text{ s} \\approx 1\\text{ dia}$",
+        resp: "(a) $\\sim 3\\text{ min}$; (b) $\\sim 5,3\\text{ h}$; (c) $\\sim 1\\text{ dia}$"
+      },
+      {
+        num: "11",
+        title: "Razões da elevada dureza e fragilidade da martensita",
+        enunciado: "Cite duas razões pelas quais a martensita é tão dura e frágil.",
+        calculo: "1. <strong>Distorção tetragonal (TCC):</strong> Átomos de carbono supersaturados nos interstícios geram fortes tensões internas na rede cristalina.<br>2. <strong>Restrição ao escorregamento:</strong> A estrutura TCC possui poucos planos e direções compactas operantes, bloqueando o movimento de discordâncias.",
+        resp: "Distorção da rede TCC pelo carbono intersticial e escassez de sistemas de escorregamento."
+      },
+      {
+        num: "12",
+        title: "Microestrutura final após rotas térmicas no diagrama TTT (Fig. 4)",
+        enunciado: "Usando o diagrama TTT (Fig. 4), especifique a microestrutura final a partir de $760\\ ^\\circ\\text{C}$ para: (a) $350\\ ^\\circ\\text{C}$ por $10^4\\text{ s}$ + têmpera; (b) $250\\ ^\\circ\\text{C}$ por $100\\text{ s}$ + têmpera; (c) $650\\ ^\\circ\\text{C}$ por $20\\text{ s}$, depois $400\\ ^\\circ\\text{C}$ por $10^3\\text{ s}$ + têmpera.",
+        calculo: "• <strong>(a)</strong> A $350\\ ^\\circ\\text{C}$ por $10^4\\text{ s}$ cruza totalmente o campo bainítico ($100\\%$ bainita antes da têmpera).<br>• <strong>(b)</strong> A $250\\ ^\\circ\\text{C}$ por $100\\text{ s}$ não inicia bainita ($100\\%$ austenita), virando $100\\%$ martensita na têmpera.<br>• <strong>(c)</strong> A $650\\ ^\\circ\\text{C}$ por $20\\text{ s}$ forma $50\\%$ perlita; os $50\\%$ restantes de austenita viram $50\\%$ bainita a $400\\ ^\\circ\\text{C}$ por $10^3\\text{ s}$.",
+        resp: "(a) $100\\%$ Bainita; (b) $100\\%$ Martensita; (c) $50\\%$ Perlita + $50\\%$ Bainita"
+      }
+    ];
+
+    // Tab Switching Logic com estilo segmentado
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('bg-cyber-cyan', 'text-cyber-900', 'shadow-md');
+        btn.classList.add('text-slate-400');
+      });
+
+      const activeTab = document.getElementById(tabId);
+      if (activeTab) {
+        activeTab.classList.remove('hidden');
+      }
+
+      const activeBtn = document.getElementById('btn-' + tabId.replace('tab-', ''));
+      if (activeBtn) {
+        activeBtn.classList.remove('text-slate-400');
+        activeBtn.classList.add('bg-cyber-cyan', 'text-cyber-900', 'shadow-md');
+      }
+
+      if (tabId === 'tab-lista8') {
+        updateAvramiSim();
+      }
+
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise();
+      }
+    }
+
+    // Interactive Simulation for Lista 6 (Stress Concentration)
+    function updateStressSim() {
+      const sigma0 = parseFloat(document.getElementById('input-sigma0').value);
+      const a = parseFloat(document.getElementById('input-a').value);
+      const rho = parseFloat(document.getElementById('input-rho').value);
+
+      document.getElementById('lbl-sigma0').textContent = sigma0 + ' MPa';
+      document.getElementById('lbl-a').textContent = a.toFixed(4) + ' mm';
+      document.getElementById('lbl-rho').textContent = rho.toFixed(5) + ' mm';
+
+      const kt = 2 * Math.sqrt(a / rho);
+      const sigmaMax = kt * sigma0;
+
+      document.getElementById('res-kt').textContent = kt.toFixed(2);
+      document.getElementById('res-sigmamax').textContent = (sigmaMax / 1000).toFixed(2) + ' GPa';
+
+      drawStressCanvas(kt, a, rho);
+    }
+
+    function drawStressCanvas(kt, a, rho) {
+      const canvas = document.getElementById('stressCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(25, 15, w - 50, h - 30);
+      ctx.strokeStyle = '#1f3460';
+      ctx.strokeRect(25, 15, w - 50, h - 30);
+
+      const cx = w / 2;
+      const cy = h / 2;
+      const crackWidth = Math.min(80, Math.max(25, a * 2000));
+      const crackHeight = Math.min(20, Math.max(5, rho * 20000));
+
+      const glowGradLeft = ctx.createRadialGradient(cx - crackWidth, cy, 2, cx - crackWidth, cy, 18);
+      glowGradLeft.addColorStop(0, 'rgba(255, 0, 85, 0.9)');
+      glowGradLeft.addColorStop(1, 'rgba(255, 0, 85, 0)');
+      ctx.fillStyle = glowGradLeft;
+      ctx.beginPath();
+      ctx.arc(cx - crackWidth, cy, 18, 0, Math.PI * 2);
+      ctx.fill();
+
+      const glowGradRight = ctx.createRadialGradient(cx + crackWidth, cy, 2, cx + crackWidth, cy, 18);
+      glowGradRight.addColorStop(0, 'rgba(255, 0, 85, 0.9)');
+      glowGradRight.addColorStop(1, 'rgba(255, 0, 85, 0)');
+      ctx.fillStyle = glowGradRight;
+      ctx.beginPath();
+      ctx.arc(cx + crackWidth, cy, 18, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.lineWidth = 1.2;
+      const numLines = 11;
+      const startX = 45;
+      const endX = w - 45;
+      const step = (endX - startX) / (numLines - 1);
+
+      for (let i = 0; i < numLines; i++) {
+        const x = startX + i * step;
+        ctx.beginPath();
+        ctx.strokeStyle = '#00f0ff';
+
+        const distFromCenter = Math.abs(x - cx);
+        if (distFromCenter < crackWidth * 1.3) {
+          ctx.strokeStyle = 'rgba(0, 240, 255, 0.85)';
+          ctx.moveTo(x, 15);
+          const bend = (x < cx) ? -15 : 15;
+          ctx.bezierCurveTo(x, cy - 25, x + bend, cy, x + bend, cy);
+          ctx.bezierCurveTo(x + bend, cy, x, cy + 25, x, h - 15);
+        } else {
+          ctx.moveTo(x, 15);
+          ctx.lineTo(x, h - 15);
+        }
+        ctx.stroke();
+      }
+
+      ctx.fillStyle = '#070b13';
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, crackWidth, crackHeight, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+
+      ctx.strokeStyle = '#05ffa1';
+      ctx.fillStyle = '#05ffa1';
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.moveTo(cx, 12); ctx.lineTo(cx, 2);
+      ctx.lineTo(cx - 4, 6); ctx.moveTo(cx, 2); ctx.lineTo(cx + 4, 6);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx, h - 12); ctx.lineTo(cx, h - 2);
+      ctx.lineTo(cx - 4, h - 6); ctx.moveTo(cx, h - 2); ctx.lineTo(cx + 4, h - 6);
+      ctx.stroke();
+
+      ctx.fillStyle = '#05ffa1';
+      ctx.font = '9px JetBrains Mono';
+      ctx.fillText(`σ₀ = ${document.getElementById('input-sigma0').value} MPa`, cx + 10, 10);
+    }
+
+    // Fe-C Simulator for Lista 7
+    function updateFeCSim() {
+      const c0 = parseFloat(document.getElementById('sim-c0').value);
+      document.getElementById('sim-c0-val').textContent = c0.toFixed(2) + ' %p C';
+
+      const wAlphaTotal = Math.max(0, Math.min(1, (6.70 - c0) / (6.70 - 0.022)));
+      const wFe3cTotal = 1 - wAlphaTotal;
+
+      let type = '';
+      let proPhase = '';
+      let wPro = 0;
+      let wPearl = 0;
+
+      if (c0 < 0.76) {
+        type = 'Hipoeutetoide';
+        proPhase = 'Ferrita (α\')';
+        wPro = (0.76 - c0) / (0.76 - 0.022);
+        wPearl = (c0 - 0.022) / (0.76 - 0.022);
+      } else if (Math.abs(c0 - 0.76) < 0.005) {
+        type = 'Eutetoide';
+        proPhase = '100% Perlita';
+        wPro = 0;
+        wPearl = 1.0;
+      } else {
+        type = 'Hipereutetoide';
+        proPhase = 'Cementita (Fe₃C\')';
+        wPro = (c0 - 0.76) / (6.70 - 0.76);
+        wPearl = (6.70 - c0) / (6.70 - 0.76);
+      }
+
+      document.getElementById('sim-class').textContent = type;
+      document.getElementById('sim-pro').textContent = proPhase;
+      document.getElementById('sim-w-alpha').textContent = (wAlphaTotal * 100).toFixed(1) + '%';
+      document.getElementById('sim-w-fe3c').textContent = (wFe3cTotal * 100).toFixed(1) + '%';
+      document.getElementById('sim-w-pro').textContent = (wPro * 100).toFixed(1) + '%';
+      document.getElementById('sim-w-p').textContent = (wPearl * 100).toFixed(1) + '%';
+    }
+
+    // Avrami Simulator for Lista 8
+    function updateAvramiSim() {
+      const nInput = document.getElementById('avrami-n');
+      const t50Input = document.getElementById('avrami-t50');
+      if (!nInput || !t50Input) return;
+
+      const n = parseFloat(nInput.value);
+      const t50 = parseFloat(t50Input.value);
+
+      document.getElementById('avrami-n-val').textContent = n.toFixed(1);
+      document.getElementById('avrami-t50-val').textContent = t50 + ' s';
+
+      // k = -ln(0.5) / (t50^n)
+      const k = Math.LN2 / Math.pow(t50, n);
+      // t99 = (-ln(0.01) / k)^(1/n)
+      const t99 = Math.pow(-Math.log(0.01) / k, 1 / n);
+
+      document.getElementById('avrami-k-res').textContent = k.toExponential(2);
+      document.getElementById('avrami-t99-res').textContent = Math.round(t99) + ' s';
+
+      drawAvramiCanvas(n, k, t50, t99);
+    }
+
+    function drawAvramiCanvas(n, k, t50, t99) {
+      const canvas = document.getElementById('avramiCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const w = canvas.width;
+      const h = canvas.height;
+
+      ctx.clearRect(0, 0, w, h);
+
+      const padL = 36, padR = 16, padT = 16, padB = 26;
+      const plotW = w - padL - padR;
+      const plotH = h - padT - padB;
+
+      // Grid & Axes
+      ctx.strokeStyle = '#1f3460';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(padL, padT, plotW, plotH);
+
+      // Horizontal 50% line
+      const y50 = padT + plotH * 0.5;
+      ctx.beginPath();
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = 'rgba(5, 255, 161, 0.35)';
+      ctx.moveTo(padL, y50);
+      ctx.lineTo(padL + plotW, y50);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Labels
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '9px JetBrains Mono';
+      ctx.fillText('1.0', 10, padT + 6);
+      ctx.fillText('0.5', 10, y50 + 3);
+      ctx.fillText('0.0', 10, padT + plotH);
+      ctx.fillText('Log(Tempo)', padL + plotW / 2 - 25, h - 6);
+
+      // Logarithmic time range around t50
+      const logMin = Math.log10(Math.max(0.1, t50 / 25));
+      const logMax = Math.log10(Math.max(10, t99 * 2.5));
+
+      ctx.beginPath();
+      ctx.strokeStyle = '#00f0ff';
+      ctx.lineWidth = 2.2;
+
+      for (let px = 0; px <= plotW; px++) {
+        const logT = logMin + (px / plotW) * (logMax - logMin);
+        const t = Math.pow(10, logT);
+        const y = 1 - Math.exp(-k * Math.pow(t, n));
+        const py = padT + plotH * (1 - y);
+        if (px === 0) ctx.moveTo(padL + px, py);
+        else ctx.lineTo(padL + px, py);
+      }
+      ctx.stroke();
+
+      // Highlight t50 and t99 points
+      const drawPoint = (tVal, yVal, color, label) => {
+        const logT = Math.log10(tVal);
+        const px = padL + ((logT - logMin) / (logMax - logMin)) * plotW;
+        const py = padT + plotH * (1 - yVal);
+        if (px >= padL && px <= padL + plotW) {
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(px, py, 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillText(label, Math.min(padL + plotW - 45, px + 6), Math.max(padT + 10, py - 4));
+        }
+      };
+
+      drawPoint(t50, 0.5, '#05ffa1', `t50=${t50}s`);
+      drawPoint(t99, 0.99, '#ffb703', `t99=${Math.round(t99)}s`);
+    }
+
+    // Function to render question cards dynamically with mobile accordion
+    function renderQuestions(containerId, list) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      container.innerHTML = list.map((item, idx) => `
+        <div class="border border-cyber-border/70 rounded-lg bg-cyber-900/60 overflow-hidden hover:border-cyber-cyan/40 transition">
+          <button onclick="toggleAccordion('${containerId}-q${idx}')" class="w-full px-3.5 py-2.5 flex items-center justify-between text-left bg-cyber-800/40 hover:bg-cyber-800/80 transition">
+            <div class="flex items-center space-x-2.5 min-w-0">
+              <span class="font-mono text-[10px] font-bold px-2 py-0.5 rounded bg-cyber-cyan/20 text-cyber-cyan border border-cyber-cyan/30 flex-shrink-0">
+                Q${item.num}
+              </span>
+              <span class="font-tech text-xs sm:text-sm text-slate-200 font-semibold truncate">${item.title}</span>
+            </div>
+            <i id="icon-${containerId}-q${idx}" class="fa-solid fa-chevron-down text-xs text-slate-400 transition-transform flex-shrink-0 ml-2"></i>
+          </button>
+          
+          <div id="${containerId}-q${idx}" class="p-3.5 space-y-2.5 hidden border-t border-cyber-border/50 bg-cyber-900/40 text-xs">
+            <div class="text-slate-300 bg-cyber-800/30 p-2.5 rounded border border-cyber-border/40">
+              <strong class="text-white block font-mono text-[10px] mb-1 uppercase tracking-wider text-cyber-cyan">Enunciado Oficial:</strong>
+              ${item.enunciado}
+            </div>
+
+            <div class="text-slate-300 font-mono bg-cyber-950/70 p-2.5 rounded border border-cyber-border/60 overflow-x-auto">
+              <strong class="text-white block font-mono text-[10px] mb-1 uppercase tracking-wider text-cyber-amber">Desenvolvimento & Equações:</strong>
+              ${item.calculo}
+            </div>
+
+            <div class="p-2 rounded bg-cyber-emerald/10 border-l-4 border-cyber-emerald text-cyber-emerald font-mono text-[11px]">
+              <strong>Resultado Final:</strong> ${item.resp}
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function toggleAccordion(id) {
+      const el = document.getElementById(id);
+      const icon = document.getElementById('icon-' + id);
+      if (el) {
+        el.classList.toggle('hidden');
+        if (icon) {
+          icon.classList.toggle('rotate-180');
+        }
+      }
+      if (window.MathJax && window.MathJax.typesetPromise) {
+        MathJax.typesetPromise();
+      }
+    }
+
+    // Startup initialization
+    window.addEventListener('DOMContentLoaded', () => {
+      renderQuestions('lista6-container', lista6Data);
+      renderQuestions('lista7-container', lista7Data);
+      renderQuestions('lista8-container', lista8Data);
+      updateStressSim();
+      updateFeCSim();
+      updateAvramiSim();
+
+      setTimeout(() => {
+        if (window.MathJax && window.MathJax.typesetPromise) {
+          MathJax.typesetPromise();
+        }
+      }, 300);
+    });
+  </script>
+</body>
+</html>
